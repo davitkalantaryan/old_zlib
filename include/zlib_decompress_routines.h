@@ -26,6 +26,16 @@ int ZlibDecompressBufferToFile(
 	FILE *a_dest);
 int ZlibDecompressFile(FILE *source, FILE *dest);
 int ZlibDecompressFolder(FILE *a_source, const char* a_outDirectoryPath);
+int ZlibDecompressFromWeb(const char *a_webUri, const char* a_outDirectoryPath);
+
+#if 0
+int ZlibDecompressWebToCallback(
+	z_stream* a_strm,
+	HINTERNET a_source,
+	void* a_in, int a_inBufferSize,
+	void* a_out, int a_outBufferSize,
+	typeDecompressCallback a_clbk, void* a_userData);
+#endif
 
 #ifdef __cplusplus
 }

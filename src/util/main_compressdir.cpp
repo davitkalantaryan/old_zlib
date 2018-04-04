@@ -5,7 +5,6 @@
 #pragma comment (lib,"zlib.lib")
 #endif
 
-#include "zlib_decompress_routines.h"
 #include "zlib_compression_routines.h"
 
 #include <iostream>
@@ -38,11 +37,15 @@ int main(int a_argc, char * a_argv[])
 	int ret=1;
 	int argc2 = a_argc-1;
 
-	aParser.AddOption("--output-file:-of").AddOption("--config-file:-cf").AddOption("--input-folder:-if")<<"--help:-h";
+	aParser.
+		AddOption("--output-file,-of:Prvide output file name").
+		AddOption("--config-file,-cf:Provide config file for input file tree").
+		AddOption("--input-folder,-if:The name of the input folder")
+		<<"--help,-h:To display this help";
 
 	aParser.ParseCommandLine(argc2, argv2);
 
-	if(!aParser["-h"]){
+	if(aParser["-h"]){
 		PrintHelp();
 		std::cout<<aParser.HelpString()<<std::endl;
 		ret = 0;

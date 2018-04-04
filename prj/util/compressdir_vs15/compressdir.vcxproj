@@ -246,8 +246,6 @@
     <ClCompile Include="..\..\..\src\util\main_compressdir.cpp" />
     <ClCompile Include="..\..\..\src\util\zlib_compression_routines.cpp" />
     <ClCompile Include="..\..\..\src\util\zlib_compress_decompress_common.cpp" />
-    <ClCompile Include="..\..\..\src\util\zlib_decompress_routines.cpp" />
-    <ClCompile Include="..\..\..\src\util\zlib_decompress_routines_version1.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\common\util\common_argument_parser.hpp" />
@@ -255,6 +253,9 @@
     <ClInclude Include="..\..\..\include\common\util\common_hashtbl.hpp" />
     <ClInclude Include="..\..\..\include\common\util\common_hashtbl.impl.hpp" />
     <ClInclude Include="..\..\..\include\common\util\directory_iterator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\conffiles\udoocs_arm.zcdc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

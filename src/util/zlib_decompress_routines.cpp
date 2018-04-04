@@ -15,7 +15,10 @@
 #if defined(MSDOS) || defined(OS2) || defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
 #  include <io.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 #include <Windows.h>
+#include <WinInet.h>
 #  define SET_BINARY_MODE(file) _setmode(_fileno(file), O_BINARY)
 #else
 #  define SET_BINARY_MODE(file)
@@ -237,6 +240,90 @@ returnPoint:
 }
 
 
+int ZlibDecompressWebToCallback(
+	z_stream* a_strm,
+	HINTERNET a_source,
+	void* a_in, int a_inBufferSize,
+	void* a_out, int a_outBufferSize,
+	typeDecompressCallback a_clbk, void* a_userData)
+{
+	int retInf;
+	DWORD dwRead;
+
+	/* decompress until deflate stream ends or end of file */
+	do {
+		if(!InternetReadFile(a_source,a_in, a_inBufferSize,&dwRead)){return Z_ERRNO;}
+		a_strm->avail_in = dwRead;
+		if (a_strm->avail_in == 0){break;} // we are done
+		a_strm->next_in = (Bytef*)a_in;
+
+		retInf=ZlibDecompressBufferToCallback(a_strm,a_out,a_outBufferSize,a_clbk,a_userData);
+		if(retInf<0){return retInf;}
+
+	} while (retInf != Z_STREAM_END);
+
+	return 0;
+
+}
+
+
+int ZlibDecompressFromWeb(const char *a_cpcUrl, const char* a_outDirectoryPath)
+{
+	HINTERNET	hSession = NULL, hURL = NULL;
+	SFileItemList *pItem,*pItemNext;
+	SUserDataForClbk aData;
+	z_stream strm;
+	int nReturn, nInited=0;
+	unsigned char in[DEF_CHUNK_SIZE];
+	unsigned char out[DEF_CHUNK_SIZE];
+
+	memset(&aData, 0, sizeof(SUserDataForClbk));
+	aData.dirName = a_outDirectoryPath;
+
+	/* allocate inflate state */
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
+	nReturn = inflateInit(&strm);
+	if (nReturn != Z_OK){return nReturn;}
+	nInited = 1;
+
+	hSession = InternetOpenA("DesyCloud", NULL, NULL, NULL, NULL);
+	if (!hSession){goto returnPoint;}
+
+	hURL = InternetOpenUrlA(
+		hSession, a_cpcUrl,
+		NULL, 0,
+		INTERNET_FLAG_HYPERLINK | INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE,
+		NULL);
+	if (!hURL) { goto returnPoint; }
+
+	nReturn = _mkdir(a_outDirectoryPath);
+	if ((nReturn<0) && (errno == ENOENT)) { goto returnPoint; }
+
+	nReturn=ZlibDecompressWebToCallback(&strm,hURL,in,DEF_CHUNK_SIZE,out,DEF_CHUNK_SIZE,CallbackForDecompressToFolder,&aData);
+
+
+returnPoint:
+
+	pItem = aData.first;
+	while(pItem){
+		pItemNext = pItem->next;
+		free(pItem);
+		pItem = pItemNext;
+	}
+	if(aData.headerPtr){DestroyCompressDecompressHeader(aData.headerPtr);}
+	if(nInited){(void)inflateEnd(&strm);} // if we are here then init is ok
+
+	if (hURL) { InternetCloseHandle(hURL); }
+	if (hSession) { InternetCloseHandle(hSession); }
+
+	return nReturn;
+}
+
+
 
 /*////////////////////////////////////////////////////////////////////////////*/
 
@@ -251,6 +338,8 @@ static int CallbackForDecompressToFile(const void*a_buffer, int a_bufLen, void*a
 	return 0;
 }
 
+
+static int PrepareDirIfNeeded(char* a_cpcFilePath,int a_nIsDir);
 
 static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void*a_userData)
 {
@@ -320,13 +409,14 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 	while (pUserData->current) {
 		if (pUserData->current->item->fileSize == 0) {  // this is a directory
 			_snprintf(vcDirectoryName, MAX_PATH, "%s\\%s", pUserData->dirName, ITEM_NAME(pUserData->current->item));
-			nRetDir = _mkdir(vcDirectoryName);
-			if ((nRetDir < 0) && (errno == ENOENT)) { return -2; }
+			nRetDir=PrepareDirIfNeeded(vcDirectoryName,1);
+			if ((nRetDir < 0) /*&& (errno == ENOENT)*/) { return -2; }
 
 		}
 		else if ((pUserData->readOnCurrentFile + a_bufLen) > pUserData->current->item->fileSize) {
 			if (!pUserData->currentFile) {
 				_snprintf(vcFileName, MAX_PATH, "%s\\%s", pUserData->dirName, ITEM_NAME(pUserData->current->item));
+				PrepareDirIfNeeded(vcFileName, 0);
 				pUserData->currentFile = fopen(vcFileName, "wb");
 				if (!pUserData->currentFile) { return -3; }
 				pUserData->readOnCurrentFile = 0;
@@ -347,6 +437,7 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 		else {
 			if (!pUserData->currentFile) {
 				_snprintf(vcFileName, MAX_PATH, "%s\\%s", pUserData->dirName, ITEM_NAME(pUserData->current->item));
+				PrepareDirIfNeeded(vcFileName,0);
 				pUserData->currentFile = fopen(vcFileName, "wb");
 				if (!pUserData->currentFile) { return -3; }
 				pUserData->readOnCurrentFile = 0;
@@ -361,6 +452,39 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 	}  // while(pUserData->current){
 
 	return 0;
+}
+
+
+static int PrepareDirIfNeeded(char* a_cpcFilePath,int a_nIsDir)
+{
+	char *pcDelim,*pcNext;
+	int nRetDir=-1;
+	char cDelim;
+
+	if ((pcDelim = strchr(a_cpcFilePath, '/'))) { cDelim = '/'; }
+	else if ((pcDelim = strchr(a_cpcFilePath, '\\'))) { cDelim = '\\'; }
+	while (pcDelim) {
+		pcNext = pcDelim + 1;
+		*pcDelim = 0;
+		nRetDir = _mkdir(a_cpcFilePath);
+		*pcDelim = cDelim;
+		if (nRetDir < 0) { 
+			if (errno == ENOENT) {return -3; }
+			else { nRetDir =0;}
+		}
+		if ((pcDelim = strchr(pcNext, '/'))) { cDelim = '/'; }
+		else if ((pcDelim = strchr(pcNext, '\\'))) { cDelim = '\\'; }
+	}
+
+	if (a_nIsDir) {
+		nRetDir=_mkdir(a_cpcFilePath);
+		if (nRetDir < 0) {
+			if (errno == ENOENT) { return -3; }
+			else { nRetDir = 0; }
+		}
+	}
+
+	return nRetDir;
 }
 
 

@@ -10,6 +10,10 @@
 #include <zlib.h>
 #include <stdio.h>
 
+#define ZLIB_COMPR_DECOMPR_VERSION	1
+
+#define SIZE_OF_MAIN_HEADER			32  // B
+
 #define LAST_STRING_IN_THE_FILE		"End"
 #define LAST_STRING_IN_THE_FILE_LEN	4
 
@@ -20,6 +24,8 @@
 extern "C"{
 #endif
 
+enum TypeOfCompressedContent{CompressedContentDirectory,CompressedContentFile};
+
 // padding is 8
 typedef struct SFileItem
 {
@@ -29,14 +35,18 @@ typedef struct SFileItem
 
 typedef struct SCompressDecompressHeader
 {
+	uint32_t version;
 	uint32_t wholeHeaderSizeInBytes;
+	uint32_t typeOfCompressedContent;
 	uint32_t numberOfItems;
+	uint32_t vReserved[4];
 }SCompressDecompressHeader;
 
 #define LEN_FROM_ITEM(_item)	(  sizeof(SFileItem)+(_item)->fileNameLen    )
 #define ITEM_NAME(_item)		(  ((char*)(_item))+sizeof(SFileItem)  )
 
-SCompressDecompressHeader* ZlibCreateCompressDecompressHeader(uint32_t headerSize, uint32_t numberOfItems);
+SCompressDecompressHeader* ZlibCreateCompressDecompressHeader(uint32_t headerSize, uint32_t typeOfCompressedContent, uint32_t numberOfItems);
+SCompressDecompressHeader* ZlibCreateAndCopyComprDecomprHeader(const SCompressDecompressHeader* orgin, int a_nAll);
 void DestroyCompressDecompressHeader(SCompressDecompressHeader* header);
 
 

@@ -54,7 +54,7 @@ static int CallbackForDecompressToFile(const void*a_buffer, int a_bufLen, void*a
 static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void*a_userData);
 
 
-int ZlibDecompressBufferToCallback(
+int ZlibDecompressBufferToCallback_version1(
 	z_stream* a_strm,
 	void* a_out, int a_outBufferSize,
 	typeDecompressCallback a_clbk,void* a_userData)
@@ -87,7 +87,7 @@ int ZlibDecompressBufferToCallback(
 }
 
 
-int ZlibDecompressFileToCallback(
+int ZlibDecompressFileToCallback_version1(
 	z_stream* a_strm,
 	FILE* a_source,
 	void* a_in, int a_inBufferSize,
@@ -113,7 +113,7 @@ int ZlibDecompressFileToCallback(
 }
 
 
-int ZlibDecompressBufferToFile(
+int ZlibDecompressBufferToFile_version1(
 	z_stream* a_strm,
 	void* a_out, int a_outBufferSize,
 	FILE *a_dest)
@@ -130,7 +130,7 @@ allocated for processing, Z_DATA_ERROR if the deflate data is
 invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
 the version of the library linked do not match, or Z_ERRNO if there
 is an error reading or writing the files. */
-int ZlibDecompressFile(FILE *a_source, FILE *a_dest)
+int ZlibDecompressFile_version1(FILE *a_source, FILE *a_dest)
 {
 	int ret;
 	unsigned have;
@@ -194,7 +194,7 @@ int ZlibDecompressFile(FILE *a_source, FILE *a_dest)
 }
 
 
-int ZlibDecompressFolder(FILE *a_source, const char* a_outDirectoryPath)
+int ZlibDecompressFolder_version1(FILE *a_source, const char* a_outDirectoryPath)
 {
 	SFileItemList *pItem,*pItemNext;
 	SUserDataForClbk aData;
@@ -219,7 +219,7 @@ int ZlibDecompressFolder(FILE *a_source, const char* a_outDirectoryPath)
 	nReturn = _mkdir(a_outDirectoryPath);
 	if ((nReturn<0) && (errno == ENOENT)) { goto returnPoint; }
 
-	nReturn=ZlibDecompressFileToCallback(&strm,a_source,in,DEF_CHUNK_SIZE,out,DEF_CHUNK_SIZE,CallbackForDecompressToFolder,&aData);
+	nReturn=ZlibDecompressFileToCallback_version1(&strm,a_source,in,DEF_CHUNK_SIZE,out,DEF_CHUNK_SIZE,CallbackForDecompressToFolder,&aData);
 
 
 returnPoint:
@@ -266,7 +266,7 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 			pcBuffer = (char*)a_buffer;
 			unCpy = sizeof(SCompressDecompressHeader) - pUserData->alreadyRead;
 			memcpy(((char*)&(pUserData->headerBase))+pUserData->alreadyRead, a_buffer, unCpy);
-			pUserData->headerPtr = ZlibCreateAndCopyComprDecomprHeader(&pUserData->headerBase,0);
+			pUserData->headerPtr = ZlibCreateAndCopyComprDecomprHeader(&(pUserData->headerBase),0);
 			if(!pUserData->headerPtr){return -1;}
 			memcpy(pUserData->headerPtr,&(pUserData->headerBase),sizeof(SCompressDecompressHeader));
 			a_bufLen -= unCpy;

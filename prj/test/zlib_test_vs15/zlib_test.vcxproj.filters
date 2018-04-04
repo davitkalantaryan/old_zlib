@@ -30,6 +30,12 @@
     <ClCompile Include="..\..\..\src\util\zlib_compress_decompress_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\util\zlib_decompress_routines_version1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\.others_codes\matwork\ChangeDir.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\common\util\directory_iterator.h">
@@ -42,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\zlib_compress_decompress_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\common\util\common_hashtbl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\common\util\common_hashtbl.impl.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

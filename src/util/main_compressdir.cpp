@@ -132,7 +132,7 @@ returnPoint:
 		if(pItem->file){fclose(pItem->file);}
 		if(pItem->item){free(pItem->item);}
 		free(pItem);
-		pItem = pItemTemp->next;
+		pItem = pItemTemp;
 	}
 
 	return nReturn;
@@ -146,7 +146,7 @@ static int PrepareListFromFile(SCompressList* a_list,uint16_t* a_pHeaderSize, ui
 {	
 	static const size_t scunLINE_LEN_MIN1 = 4 * MAX_PATH - 1;
 	static const char svcTermStr[] = {' ','\t'};
-	static const char svcTermStr2[] = { ' ','\t','\n' };
+	static const char svcTermStr2[] = { ' ','\t','\n','\r' };
 	
 	char *pcFilePath, *pcTargetPath, *pcTemp, *pcFileName, *pcSubDirs, *pcNext;
 	SFileItemList* pItem;
@@ -209,7 +209,8 @@ static int PrepareListFromFile(SCompressList* a_list,uint16_t* a_pHeaderSize, ui
 			//if(!aHashDirs.FindEntry(pcSubDirs,fileNameLen,&bFindResult)){
 			fileNameLen = (uint16_t)strlen(pcTargetPath);
 			if (!aHashDirs.FindEntry(pcTargetPath, fileNameLen, &bFindResult)) {
-				pItem=ZlibCreateListItemCompress(pcSubDirs, fileNameLen,1,NULL);
+				//pItem=ZlibCreateListItemCompress(pcSubDirs, fileNameLen,1,NULL);
+				pItem = ZlibCreateListItemCompress(pcTargetPath, fileNameLen, 1, NULL);
 				if(!pItem){goto returnPoint;}
 				*a_pHeaderSize += LEN_FROM_ITEM(pItem->item);
 				++(*a_numberOfItems);

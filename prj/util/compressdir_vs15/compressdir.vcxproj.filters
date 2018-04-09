@@ -55,5 +55,8 @@
     <None Include="..\..\..\conffiles\udoocs_arm.zcdc">
       <Filter>conf</Filter>
     </None>
+    <None Include="..\..\..\conffiles\__install.steps">
+      <Filter>conf</Filter>
+    </None>
   </ItemGroup>
 </Project>

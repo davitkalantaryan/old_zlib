@@ -416,7 +416,7 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 		else if ((pUserData->readOnCurrentFile + a_bufLen) > pUserData->current->item->fileSize) {
 			if (!pUserData->currentFile) {
 				_snprintf(vcFileName, MAX_PATH, "%s\\%s", pUserData->dirName, ITEM_NAME(pUserData->current->item));
-				PrepareDirIfNeeded(vcFileName, 0);
+				//PrepareDirIfNeeded(vcFileName, 0);
 				pUserData->currentFile = fopen(vcFileName, "wb");
 				if (!pUserData->currentFile) { return -3; }
 				pUserData->readOnCurrentFile = 0;
@@ -437,7 +437,7 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 		else {
 			if (!pUserData->currentFile) {
 				_snprintf(vcFileName, MAX_PATH, "%s\\%s", pUserData->dirName, ITEM_NAME(pUserData->current->item));
-				PrepareDirIfNeeded(vcFileName,0);
+				//PrepareDirIfNeeded(vcFileName,0);
 				pUserData->currentFile = fopen(vcFileName, "wb");
 				if (!pUserData->currentFile) { return -3; }
 				pUserData->readOnCurrentFile = 0;
@@ -457,8 +457,9 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 
 static int PrepareDirIfNeeded(char* a_cpcFilePath,int a_nIsDir)
 {
+	int nRetDir = -1;
+#if 0
 	char *pcDelim,*pcNext;
-	int nRetDir=-1;
 	char cDelim;
 
 	if ((pcDelim = strchr(a_cpcFilePath, '/'))) { cDelim = '/'; }
@@ -475,6 +476,8 @@ static int PrepareDirIfNeeded(char* a_cpcFilePath,int a_nIsDir)
 		if ((pcDelim = strchr(pcNext, '/'))) { cDelim = '/'; }
 		else if ((pcDelim = strchr(pcNext, '\\'))) { cDelim = '\\'; }
 	}
+
+#endif
 
 	if (a_nIsDir) {
 		nRetDir=_mkdir(a_cpcFilePath);

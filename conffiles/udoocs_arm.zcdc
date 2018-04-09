@@ -24,6 +24,13 @@ W:\udoocs\contrib\sys\arm_win\dll\rfc.4.0.1.pdb										ARM\dll\.
 W:\udoocs\contrib\sys\arm_win\dll\tine_for_wdoocs.18.10.16.10.pdb					ARM\dll\.
 W:\udoocs\contrib\sys\arm_win\dll\wlac.4.0.3.pdb									ARM\dll\.
 
+W:\udoocs\sys\arm_win\dll\concrt140d.dll											ARM\dll\.
+W:\udoocs\sys\arm_win\dll\vcamp140d.dll												ARM\dll\.
+W:\udoocs\sys\arm_win\dll\vccorlib140d.dll											ARM\dll\.
+W:\udoocs\sys\arm_win\dll\vcomp140d.dll												ARM\dll\.
+W:\udoocs\sys\arm_win\dll\vcruntime140d.dll											ARM\dll\.
+W:\udoocs\sys\arm_win\dll\ucrtbased.dll												ARM\dll\.
+
 W:\udoocs\contrib\sys\arm_win\bin\rpc_bind.exe										ARM\.util\.
 W:\sys\arm_win\bin\doocs_ARM_server.exe												ARM\.util\.
 W:\sys\arm_win\bin\udoocs_updater_ARM_server.exe									ARM\.util\.
@@ -33,6 +40,7 @@ W:\udoocs\sys\arm_win\dll\vcamp140d.dll												ARM\.util\.
 W:\udoocs\sys\arm_win\dll\vccorlib140d.dll											ARM\.util\.
 W:\udoocs\sys\arm_win\dll\vcomp140d.dll												ARM\.util\.
 W:\udoocs\sys\arm_win\dll\vcruntime140d.dll											ARM\.util\.
+W:\udoocs\sys\arm_win\dll\ucrtbased.dll												ARM\.util\.
 W:\udoocs\contrib\sys\arm_win\dll\mini_xdr_rpc.2.0.2.dll							ARM\.util\.
 W:\udoocs\contrib\sys\arm_win\dll\remote_function_call_false_without_lib.4.0.1.dll	ARM\.util\.
 W:\udoocs\contrib\sys\arm_win\dll\rfc.4.0.1.dll										ARM\.util\.

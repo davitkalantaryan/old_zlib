@@ -16,6 +16,13 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <Windows.h>
+#else
+#endif
+
 typedef struct SFileItemList
 {
 	SFileItem*		item;
@@ -49,6 +56,16 @@ int ZlibCompressFileRawEx(
 int ZlibCompressFileRaw(FILE * a_source, FILE * a_dest, int a_nCompressionLeel);
 int ZlibCompressFolderEx(const SCompressList* a_list, uint16_t a_headerSize, uint16_t a_numberOfItems, FILE *a_dest, int a_level);
 int ZlibCompressFolder(const char* a_directoryPath, FILE *a_dest, int a_level);
+#ifdef _WIN32
+int ZlibCompressFromHandleRawEx(
+	z_stream* a_strm,
+	HANDLE a_source, FILE * a_dest,
+	void* a_in, int a_inBufferSize,
+	void* a_out, int a_outBufferSize,
+	int a_nFlushInTheEnd);
+int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest, int a_nCompressionLeel);
+#else   // #ifdef _WIN32
+#endif  // #ifdef _WIN32
 
 
 #ifdef __cplusplus

@@ -115,6 +115,73 @@ int ZlibCompressFileRawEx(
 	return Z_OK;
 }
 
+#ifdef _WIN32
+
+/* Compress from file source to file dest until EOF on source.
+def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
+allocated for processing, Z_STREAM_ERROR if an invalid compression
+level is supplied, Z_VERSION_ERROR if the version of zlib.h and the
+version of the library linked do not match, or Z_ERRNO if there is
+an error reading or writing the files. */
+int ZlibCompressFromHandleRawEx(
+	z_stream* a_strm,
+	HANDLE a_source, FILE * a_dest,
+	void* a_in, int a_inBufferSize,
+	void* a_out, int a_outBufferSize,
+	int a_nFlushInTheEnd)
+{
+	DWORD dwBytesRead;
+	BOOL bRet;
+	int ret=Z_OK, flush, isFileof=0;
+
+	/* compress until end of file */
+	do {
+		bRet=ReadFile(a_source,a_in,a_inBufferSize,&dwBytesRead,NULL);
+		if(!bRet){return Z_ERRNO;}
+		a_strm->avail_in = dwBytesRead;
+		//isFileof = feof(a_source);
+		isFileof = (((int)dwBytesRead)<a_inBufferSize)?1:0;
+		flush = (a_nFlushInTheEnd&&isFileof) ? Z_FINISH : Z_NO_FLUSH;
+		a_strm->next_in = (Bytef*)a_in;
+
+		ret = ZlibCompressBufferToFile(a_strm, flush,a_out,a_outBufferSize,a_dest);
+
+	} while (!isFileof);
+	if(a_nFlushInTheEnd){assert(ret == Z_STREAM_END);}        /* stream will be complete */
+	
+	return Z_OK;
+}
+
+
+/* Compress from file source to file dest until EOF on source.
+def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
+allocated for processing, Z_STREAM_ERROR if an invalid compression
+level is supplied, Z_VERSION_ERROR if the version of zlib.h and the
+version of the library linked do not match, or Z_ERRNO if there is
+an error reading or writing the files. */
+int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest,int a_nCompressionLeel)
+{
+	z_stream strm;
+	int nReturn =Z_OK;
+	unsigned char in[DEF_CHUNK_SIZE];
+	unsigned char out[DEF_CHUNK_SIZE];
+
+	/* allocate deflate state */
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	nReturn = deflateInit(&strm, a_nCompressionLeel);
+	if (nReturn != Z_OK){return nReturn;}
+
+	nReturn= ZlibCompressFromHandleRawEx(&strm,a_source,a_dest,in, DEF_CHUNK_SIZE,out, DEF_CHUNK_SIZE,1);
+
+	(void)deflateEnd(&strm);
+	return Z_OK;
+}
+
+#endif  // #ifdef _WIN32
+
+
 
 /* Compress from file source to file dest until EOF on source.
 def() returns Z_OK on success, Z_MEM_ERROR if memory could not be

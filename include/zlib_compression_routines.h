@@ -62,8 +62,8 @@ int ZlibCompressFromHandleRawEx(
 	HANDLE a_source, FILE * a_dest,
 	void* a_in, int a_inBufferSize,
 	void* a_out, int a_outBufferSize,
-	int a_nFlushInTheEnd);
-int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest, int a_nCompressionLeel);
+	int a_nFlushInTheEnd, int a_nDiskSize);
+int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest, int a_nCompressionLeel, int a_nDiskSize);
 #else   // #ifdef _WIN32
 #endif  // #ifdef _WIN32
 

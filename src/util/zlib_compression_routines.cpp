@@ -128,25 +128,31 @@ int ZlibCompressFromHandleRawEx(
 	HANDLE a_source, FILE * a_dest,
 	void* a_in, int a_inBufferSize,
 	void* a_out, int a_outBufferSize,
-	int a_nFlushInTheEnd)
+	int a_nFlushInTheEnd, int a_nDiskSize)
 {
 	DWORD dwBytesRead;
 	BOOL bRet;
-	int ret=Z_OK, flush, isFileof=0;
+	int ret=Z_OK, flush;
+	int nReadedTotal(0);
 
 	/* compress until end of file */
 	do {
 		bRet=ReadFile(a_source,a_in,a_inBufferSize,&dwBytesRead,NULL);
 		if(!bRet){return Z_ERRNO;}
 		a_strm->avail_in = dwBytesRead;
-		//isFileof = feof(a_source);
-		isFileof = (((int)dwBytesRead)<a_inBufferSize)?1:0;
-		flush = (a_nFlushInTheEnd&&isFileof) ? Z_FINISH : Z_NO_FLUSH;
+		nReadedTotal += dwBytesRead;
 		a_strm->next_in = (Bytef*)a_in;
+		if(nReadedTotal<a_nDiskSize){
+			flush = Z_NO_FLUSH;
+			ret = ZlibCompressBufferToFile(a_strm, flush, a_out, a_outBufferSize, a_dest);
+		}
+		else{
+			flush = a_nFlushInTheEnd ? Z_FINISH : Z_NO_FLUSH;
+			ret = ZlibCompressBufferToFile(a_strm, flush, a_out, a_outBufferSize, a_dest);
+			break;
+		}
 
-		ret = ZlibCompressBufferToFile(a_strm, flush,a_out,a_outBufferSize,a_dest);
-
-	} while (!isFileof);
+	} while (1);
 	if(a_nFlushInTheEnd){assert(ret == Z_STREAM_END);}        /* stream will be complete */
 	
 	return Z_OK;
@@ -159,7 +165,7 @@ allocated for processing, Z_STREAM_ERROR if an invalid compression
 level is supplied, Z_VERSION_ERROR if the version of zlib.h and the
 version of the library linked do not match, or Z_ERRNO if there is
 an error reading or writing the files. */
-int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest,int a_nCompressionLeel)
+int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest,int a_nCompressionLeel, int a_nDiskSize)
 {
 	z_stream strm;
 	int nReturn =Z_OK;
@@ -173,7 +179,7 @@ int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest,int a_nCompressionL
 	nReturn = deflateInit(&strm, a_nCompressionLeel);
 	if (nReturn != Z_OK){return nReturn;}
 
-	nReturn= ZlibCompressFromHandleRawEx(&strm,a_source,a_dest,in, DEF_CHUNK_SIZE,out, DEF_CHUNK_SIZE,1);
+	nReturn= ZlibCompressFromHandleRawEx(&strm,a_source,a_dest,in, DEF_CHUNK_SIZE,out, DEF_CHUNK_SIZE,1,a_nDiskSize);
 
 	(void)deflateEnd(&strm);
 	return Z_OK;

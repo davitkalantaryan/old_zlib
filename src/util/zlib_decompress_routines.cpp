@@ -4,6 +4,7 @@
 //
 // docs
 // https://www.installsetupconfig.com/win32programming/windowsdiskapis2_3.html 
+// https://github.com/pbatard/rufus/blob/master/src/drive.c
 //
 
 #include <stdio.h>

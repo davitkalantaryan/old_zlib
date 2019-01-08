@@ -56,16 +56,7 @@ int ZlibCompressFileRawEx(
 int ZlibCompressFileRaw(FILE * a_source, FILE * a_dest, int a_nCompressionLeel);
 int ZlibCompressFolderEx(const SCompressList* a_list, uint16_t a_headerSize, uint16_t a_numberOfItems, FILE *a_dest, int a_level);
 int ZlibCompressFolder(const char* a_directoryPath, FILE *a_dest, int a_level);
-#ifdef _WIN32
-int ZlibCompressFromHandleRawEx(
-	z_stream* a_strm,
-	HANDLE a_source, FILE * a_dest,
-	void* a_in, int a_inBufferSize,
-	void* a_out, int a_outBufferSize,
-	int a_nFlushInTheEnd, int a_nDiskSize);
-int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest, int a_nCompressionLeel, int a_nDiskSize);
-#else   // #ifdef _WIN32
-#endif  // #ifdef _WIN32
+int ZlibCompressDriveRaw(const char* a_driveName, FILE * a_dest, int a_nCompressionLeel);
 
 
 #ifdef __cplusplus

@@ -11,7 +11,7 @@
  *
  */
 
-#include "util/directory_iterator.h"
+#include "common/util/directory_iterator.h"
 #include <string.h>
 #include <Windows.h>
 #include <stdio.h>

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <assert.h>
 #include "zlib.h"
-#include "util/directory_iterator.h"
+#include "common/util/directory_iterator.h"
 #include <stdint.h>
 #include <sys/stat.h>
 #include "zlib_decompress_routines.h"
@@ -53,8 +53,21 @@ typedef struct SUserDataForClbk
 	uint32_t					readOnCurrentFile;
 }SUserDataForClbk;
 
+
+
+typedef struct SUserDataForDrive
+{
+	PARTITION_INFORMATION pi;
+	int64_t	driveSize, alreadyReadBytes;
+#ifdef _WIN32
+	HANDLE	driveHandle;
+#else
+#endif
+}SUserDataForDrive;
+
 static int CallbackForDecompressToFile(const void*a_buffer, int a_bufLen, void*a_userData);
 static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void*a_userData);
+static int CallbackForDecompressToDrive(const void*a_buffer, int a_bufLen, void*a_userData);
 
 
 int ZlibDecompressBufferToCallback(
@@ -324,6 +337,55 @@ returnPoint:
 }
 
 
+#ifdef _WIN32
+
+int ZlibBurnImageFromWeb(const char *a_cpcUrl, HANDLE a_drive, __int64 a_nDiskSize)
+{
+	HINTERNET	hSession = NULL, hURL = NULL;
+	SUserDataForDrive aData;
+	z_stream strm;
+	int nReturn, nInited=0;
+	unsigned char in[DEF_CHUNK_SIZE];
+	unsigned char out[DEF_CHUNK_SIZE];
+
+	/* allocate inflate state */
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
+	nReturn = inflateInit(&strm);
+	if (nReturn != Z_OK){return nReturn;}
+	nInited = 1;
+
+	hSession = InternetOpenA("DesyCloud", NULL, NULL, NULL, NULL);
+	if (!hSession){goto returnPoint;}
+
+	hURL = InternetOpenUrlA(
+		hSession, a_cpcUrl,
+		NULL, 0,
+		INTERNET_FLAG_HYPERLINK | INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE,
+		NULL);
+	if (!hURL) { goto returnPoint; }
+
+	aData.alreadyReadBytes = 0;
+	aData.driveHandle = a_drive;
+	aData.driveSize = a_nDiskSize;
+	nReturn=ZlibDecompressWebToCallback(&strm,hURL,in,DEF_CHUNK_SIZE,out,DEF_CHUNK_SIZE, CallbackForDecompressToDrive,&aData);
+
+
+returnPoint:
+
+	if (hURL) { InternetCloseHandle(hURL); }
+	if (hSession) { InternetCloseHandle(hSession); }
+
+	return nReturn;
+}
+
+
+#endif  // #ifdef _WIN32
+
+
 
 /*////////////////////////////////////////////////////////////////////////////*/
 
@@ -340,6 +402,37 @@ static int CallbackForDecompressToFile(const void*a_buffer, int a_bufLen, void*a
 
 
 static int PrepareDirIfNeeded(char* a_cpcFilePath,int a_nIsDir);
+
+static int CallbackForDecompressToDrive(const void*a_buffer, int a_bufLen, void*a_userData)
+{
+	static const int64_t scnHeaderSize(sizeof(PARTITION_INFORMATION));
+	BOOL bRet;
+	DWORD dwWrited;
+	SUserDataForDrive* pUserData = (SUserDataForDrive*)a_userData;
+
+	if(pUserData->alreadyReadBytes<scnHeaderSize){
+		char* pcOriginDriveSize = (char*)(&pUserData->pi);
+		int64_t nSizeToCopy = scnHeaderSize - pUserData->alreadyReadBytes;
+		//int nBufPointer = nSizeToCopy + (int)pUserData->alreadyReadBytes;
+		nSizeToCopy = (nSizeToCopy>((int64_t)a_bufLen))?((int64_t)a_bufLen):nSizeToCopy;
+		memcpy(pcOriginDriveSize+pUserData->alreadyReadBytes,a_buffer,(size_t)nSizeToCopy);
+		a_buffer = ((const char*)a_buffer)+ ((size_t)nSizeToCopy);
+		a_bufLen -= ((int)nSizeToCopy);
+
+		if(  (nSizeToCopy + pUserData->alreadyReadBytes)>= scnHeaderSize  ){
+			DWORD dwReturned;
+			BOOL bSuccs;
+			if(pUserData->pi.PartitionLength.QuadPart>pUserData->driveSize){return -2;} // do not big enough
+			bSuccs = DeviceIoControl(pUserData->driveHandle, IOCTL_DISK_SET_DRIVE_LAYOUT, &pUserData->pi,sizeof(pUserData->pi),NULL,0, &dwReturned, NULL);
+			if(!bSuccs){return -3;}
+		}
+		pUserData->alreadyReadBytes += nSizeToCopy;
+	}  // if(pUserData->alreadyReadBytes<8){
+
+	bRet=WriteFile(pUserData->driveHandle,a_buffer,a_bufLen,&dwWrited,NULL);
+	pUserData->alreadyReadBytes += a_bufLen;
+	return bRet?0:-1;
+}
 
 static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void*a_userData)
 {
@@ -389,7 +482,7 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 
 
 	if(!pUserData->first){
-		SFileItemList* pList, *pPrev = NULL;
+		SFileItemList* pList=NULL, *pPrev = NULL;
 		SFileItem* pItem0 = (SFileItem*)( (char*)(pUserData->headerPtr)+ sizeof(SCompressDecompressHeader)  );
 		uint32_t i=0;
 		for(; i<pUserData->headerBase.numberOfItems;++i){
@@ -401,7 +494,7 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 			pItem0 = (SFileItem*)(  ((char*)pItem0)+ LEN_FROM_ITEM(pItem0)  );
 			pPrev = pList;
 		}
-		pList->next = NULL;
+		if(pList){pList->next = NULL;}
 		pUserData->current = pUserData->first;
 	}
 

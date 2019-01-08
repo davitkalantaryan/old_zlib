@@ -9,7 +9,7 @@
 #include <string.h>
 #include <assert.h>
 #include "zlib.h"
-#include "util/directory_iterator.h"
+#include "common/util/directory_iterator.h"
 #include <stdint.h>
 #include <sys/stat.h>
 #include "zlib_compression_routines.h"
@@ -54,7 +54,7 @@ int ZlibCompressBufferToCallback(
 	void* a_out, int a_outBufferSize,
 	typeCompressCallback a_clbk,void* a_userData)
 {
-	int ret;
+	int ret2, retZlib;
 
 	/* run deflate() on input until output buffer not full, finish
 	compression if all of source has been read in */
@@ -63,15 +63,15 @@ int ZlibCompressBufferToCallback(
 		a_strm->avail_out = a_outBufferSize;
 		a_strm->next_out = (Bytef*)a_out;
 
-		ret = deflate(a_strm, a_flush);		/* no bad return value */
-		assert(ret != Z_STREAM_ERROR);		/* state not clobbered */
+		retZlib = deflate(a_strm, a_flush);		/* no bad return value */
+		assert(retZlib != Z_STREAM_ERROR);		/* state not clobbered */
 
-		ret=(*a_clbk)(a_out,a_outBufferSize-a_strm->avail_out, a_userData);
-		if(ret){return ret;}
+		ret2=(*a_clbk)(a_out,a_outBufferSize-a_strm->avail_out, a_userData);
+		if(ret2){return ret2;}
 
 	} while (a_strm->avail_out == 0);
 	assert(a_strm->avail_in == 0);     /* all input will be used */
-	return 0;
+	return retZlib;
 }
 
 
@@ -116,6 +116,10 @@ int ZlibCompressFileRawEx(
 }
 
 #ifdef _WIN32
+#else
+typedef int HANDLE;
+#define ReadFile read
+#endif
 
 /* Compress from file source to file dest until EOF on source.
 def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
@@ -128,21 +132,21 @@ int ZlibCompressFromHandleRawEx(
 	HANDLE a_source, FILE * a_dest,
 	void* a_in, int a_inBufferSize,
 	void* a_out, int a_outBufferSize,
-	int a_nFlushInTheEnd, int a_nDiskSize)
+	int a_nFlushInTheEnd, __int64 a_nDiskSize)
 {
 	DWORD dwBytesRead;
 	BOOL bRet;
 	int ret=Z_OK, flush;
-	int nReadedTotal(0);
+	__int64 nReadedTotal(0);
 
 	/* compress until end of file */
 	do {
 		bRet=ReadFile(a_source,a_in,a_inBufferSize,&dwBytesRead,NULL);
 		if(!bRet){return Z_ERRNO;}
 		a_strm->avail_in = dwBytesRead;
-		nReadedTotal += dwBytesRead;
 		a_strm->next_in = (Bytef*)a_in;
-		if(nReadedTotal<a_nDiskSize){
+		nReadedTotal += dwBytesRead;
+		if(dwBytesRead&&(nReadedTotal<a_nDiskSize)){
 			flush = Z_NO_FLUSH;
 			ret = ZlibCompressBufferToFile(a_strm, flush, a_out, a_outBufferSize, a_dest);
 		}
@@ -152,7 +156,7 @@ int ZlibCompressFromHandleRawEx(
 			break;
 		}
 
-	} while (1);
+	} while (ret!=Z_STREAM_ERROR);
 	if(a_nFlushInTheEnd){assert(ret == Z_STREAM_END);}        /* stream will be complete */
 	
 	return Z_OK;
@@ -165,12 +169,29 @@ allocated for processing, Z_STREAM_ERROR if an invalid compression
 level is supplied, Z_VERSION_ERROR if the version of zlib.h and the
 version of the library linked do not match, or Z_ERRNO if there is
 an error reading or writing the files. */
-int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest,int a_nCompressionLeel, int a_nDiskSize)
+int ZlibCompressDriveRaw(const char* a_driveName, FILE * a_dest,int a_nCompressionLeel)
 {
+	int nReturn(-1);
+	HANDLE hDrive = INVALID_HANDLE_VALUE;
+	PARTITION_INFORMATION dg;
+	int64_t llnDriveSize;
 	z_stream strm;
-	int nReturn =Z_OK;
 	unsigned char in[DEF_CHUNK_SIZE];
 	unsigned char out[DEF_CHUNK_SIZE];
+#ifdef _WIN32
+	//IOCTL_DISK_GET_DRIVE_LAYOUT
+	DWORD dwReturned;
+	BOOL bSuccs;
+	
+	hDrive = CreateFile(a_driveName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (hDrive == INVALID_HANDLE_VALUE) { return -2; }
+
+	bSuccs = DeviceIoControl(hDrive, IOCTL_DISK_GET_PARTITION_INFO,NULL, 0, &dg, sizeof(dg), &dwReturned,NULL);
+	if(!bSuccs){goto returnPoint;}
+
+	llnDriveSize = dg.PartitionLength.QuadPart;
+#else   // #ifdef _WIN32
+#endif  // #ifdef _WIN32
 
 	/* allocate deflate state */
 	strm.zalloc = Z_NULL;
@@ -179,13 +200,19 @@ int ZlibCompressFromHandleRaw(HANDLE a_source, FILE * a_dest,int a_nCompressionL
 	nReturn = deflateInit(&strm, a_nCompressionLeel);
 	if (nReturn != Z_OK){return nReturn;}
 
-	nReturn= ZlibCompressFromHandleRawEx(&strm,a_source,a_dest,in, DEF_CHUNK_SIZE,out, DEF_CHUNK_SIZE,1,a_nDiskSize);
+	strm.avail_in = sizeof(PARTITION_INFORMATION);
+	strm.next_in = (Bytef*)&dg;
+	if (ZlibCompressBufferToFile(&strm, 0,out, DEF_CHUNK_SIZE, a_dest) == Z_STREAM_ERROR) { return Z_ERRNO; }
+
+	nReturn= ZlibCompressFromHandleRawEx(&strm,hDrive,a_dest,in, DEF_CHUNK_SIZE,out, DEF_CHUNK_SIZE,1,llnDriveSize);
 
 	(void)deflateEnd(&strm);
-	return Z_OK;
+	
+	nReturn = Z_OK;
+returnPoint:
+	if(hDrive!= INVALID_HANDLE_VALUE){CloseHandle(hDrive);}
+	return nReturn;
 }
-
-#endif  // #ifdef _WIN32
 
 
 

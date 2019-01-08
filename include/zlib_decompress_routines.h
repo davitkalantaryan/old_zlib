@@ -13,6 +13,13 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <Windows.h>
+#else
+#endif
+
 // return 0, continues, non 0 stops
 typedef int(*typeDecompressCallback)(const void*buffer, int bufLen, void*userData);
 
@@ -27,6 +34,11 @@ int ZlibDecompressBufferToFile(
 int ZlibDecompressFile(FILE *source, FILE *dest);
 int ZlibDecompressFolder(FILE *a_source, const char* a_outDirectoryPath);
 int ZlibDecompressFromWeb(const char *a_webUri, const char* a_outDirectoryPath);
+
+#ifdef _WIN32
+int ZlibBurnImageFromWeb(const char *a_cpcUrl, HANDLE a_drive, __int64 a_nDiskSize);
+#else
+#endif
 
 #if 0
 int ZlibDecompressWebToCallback(

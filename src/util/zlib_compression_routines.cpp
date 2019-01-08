@@ -31,7 +31,6 @@
 #endif
 
 
-
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -132,32 +131,39 @@ int ZlibCompressFromHandleRawEx(
 	HANDLE a_source, FILE * a_dest,
 	void* a_in, int a_inBufferSize,
 	void* a_out, int a_outBufferSize,
-	int a_nFlushInTheEnd, __int64 a_nDiskSize)
+	int a_nZlibFlush, int64_t a_llnOffset, int64_t a_llnReadSize)
 {
 	DWORD dwBytesRead;
 	BOOL bRet;
-	int ret=Z_OK, flush;
-	__int64 nReadedTotal(0);
+	int ret=Z_OK;
+	int inBufferSize;
+	int64_t llnReadedTotal(0);
+
+#ifdef _WIN32
+	LONG lDistToMoveLow = (LONG)(a_llnOffset & 0xffffffff);
+	LONG lDistToMoveHigh = (LONG)((a_llnOffset>>32) & 0xffffffff);
+	if(SetFilePointer(a_source, lDistToMoveLow,&lDistToMoveHigh, FILE_BEGIN)== INVALID_SET_FILE_POINTER){return -1;}
+#else
+#endif
 
 	/* compress until end of file */
 	do {
-		bRet=ReadFile(a_source,a_in,a_inBufferSize,&dwBytesRead,NULL);
+		inBufferSize = min(a_inBufferSize,(int)(a_llnReadSize-llnReadedTotal));
+		bRet=ReadFile(a_source,a_in,inBufferSize,&dwBytesRead,NULL);
 		if(!bRet){return Z_ERRNO;}
 		a_strm->avail_in = dwBytesRead;
 		a_strm->next_in = (Bytef*)a_in;
-		nReadedTotal += dwBytesRead;
-		if(dwBytesRead&&(nReadedTotal<a_nDiskSize)){
-			flush = Z_NO_FLUSH;
-			ret = ZlibCompressBufferToFile(a_strm, flush, a_out, a_outBufferSize, a_dest);
+		llnReadedTotal += dwBytesRead;
+		if(dwBytesRead&&(llnReadedTotal< a_llnReadSize)){
+			ret = ZlibCompressBufferToFile(a_strm, Z_NO_FLUSH, a_out, a_outBufferSize, a_dest);
 		}
 		else{
-			flush = a_nFlushInTheEnd ? Z_FINISH : Z_NO_FLUSH;
-			ret = ZlibCompressBufferToFile(a_strm, flush, a_out, a_outBufferSize, a_dest);
+			ret = ZlibCompressBufferToFile(a_strm, a_nZlibFlush, a_out, a_outBufferSize, a_dest);
 			break;
 		}
 
 	} while (ret!=Z_STREAM_ERROR);
-	if(a_nFlushInTheEnd){assert(ret == Z_STREAM_END);}        /* stream will be complete */
+	//if(a_nFlushInTheEnd){assert(ret == Z_STREAM_END);}        /* stream will be complete */
 	
 	return Z_OK;
 }
@@ -169,48 +175,81 @@ allocated for processing, Z_STREAM_ERROR if an invalid compression
 level is supplied, Z_VERSION_ERROR if the version of zlib.h and the
 version of the library linked do not match, or Z_ERRNO if there is
 an error reading or writing the files. */
-int ZlibCompressDriveRaw(const char* a_driveName, FILE * a_dest,int a_nCompressionLeel)
+int ZlibCompressDiskRaw(const char* a_driveName, FILE * a_dest,int a_nCompressionLeel)
 {
-	int nReturn(-1);
+	PARTITION_INFORMATION_EX* pPartitions;
+	SDiskCompDecompHeader* pHeader=NULL;
+	int nReturn(Z_ERRNO);
 	HANDLE hDrive = INVALID_HANDLE_VALUE;
-	PARTITION_INFORMATION dg;
-	int64_t llnDriveSize;
+	union { DRIVE_LAYOUT_INFORMATION_EX i; char b[8192]; }dli;
+	int64_t llnDiskSize, llnNextRead=0, llnStart, llnEnd;
+	uint32_t i,unNumberOfPartitions;
 	z_stream strm;
 	unsigned char in[DEF_CHUNK_SIZE];
 	unsigned char out[DEF_CHUNK_SIZE];
+	int nZstrInited = 0;
+	int nZlibFlush;
+
 #ifdef _WIN32
-	//IOCTL_DISK_GET_DRIVE_LAYOUT
+
+	DISK_GEOMETRY_EX dg2;
 	DWORD dwReturned;
 	BOOL bSuccs;
 	
 	hDrive = CreateFile(a_driveName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hDrive == INVALID_HANDLE_VALUE) { return -2; }
 
-	bSuccs = DeviceIoControl(hDrive, IOCTL_DISK_GET_PARTITION_INFO,NULL, 0, &dg, sizeof(dg), &dwReturned,NULL);
-	if(!bSuccs){goto returnPoint;}
+	bSuccs = DeviceIoControl(hDrive, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX, NULL, 0, &dg2, sizeof(dg2), &dwReturned, NULL);
+	if (!bSuccs) { goto returnPoint;}
+	llnDiskSize = dg2.DiskSize.QuadPart;
 
-	llnDriveSize = dg.PartitionLength.QuadPart;
+	bSuccs = DeviceIoControl(hDrive, IOCTL_DISK_GET_DRIVE_LAYOUT_EX, NULL, 0, &dli, sizeof(dli), &dwReturned, NULL);
+	if (!bSuccs) {goto returnPoint;}
+
 #else   // #ifdef _WIN32
 #endif  // #ifdef _WIN32
+
+	if(llnDiskSize<MINIMUM_DISK_SIZE_TO_COMPRESS){goto returnPoint;}
+
+	unNumberOfPartitions = dli.i.PartitionCount;
+	pHeader=DZlibCreateHeaderForDiscCompression(llnDiskSize,dwReturned,&dli.i);
+	if (!pHeader) { goto returnPoint; }
 
 	/* allocate deflate state */
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
 	nReturn = deflateInit(&strm, a_nCompressionLeel);
-	if (nReturn != Z_OK){return nReturn;}
+	if (nReturn != Z_OK){goto returnPoint;}
+	nZstrInited = 1;
 
-	strm.avail_in = sizeof(PARTITION_INFORMATION);
-	strm.next_in = (Bytef*)&dg;
-	if (ZlibCompressBufferToFile(&strm, 0,out, DEF_CHUNK_SIZE, a_dest) == Z_STREAM_ERROR) { return Z_ERRNO; }
+	strm.avail_in = pHeader->wholeHeaderSizeInBytes;
+	strm.next_in = (Bytef*)pHeader;
+	if (ZlibCompressBufferToFile(&strm,0,out, DEF_CHUNK_SIZE, a_dest) == Z_STREAM_ERROR) { goto returnPoint;}
 
-	nReturn= ZlibCompressFromHandleRawEx(&strm,hDrive,a_dest,in, DEF_CHUNK_SIZE,out, DEF_CHUNK_SIZE,1,llnDriveSize);
+	SortDiscCompressDecompressHeader(pHeader);
 
-	(void)deflateEnd(&strm);
-	
-	nReturn = Z_OK;
+	if(pHeader->isAnyPartAvalible){
+		pPartitions = DISK_INFO_FROM_ITEM(pHeader)->PartitionEntry;
+		nReturn = ZlibCompressFromHandleRawEx(&strm, hDrive, a_dest, in, DEF_CHUNK_SIZE, out, DEF_CHUNK_SIZE,Z_PARTIAL_FLUSH, 0, MINIMUM_DISK_SIZE_TO_COMPRESS);
+		llnNextRead = MINIMUM_DISK_SIZE_TO_COMPRESS;
+		for (i = 1; (nReturn != Z_STREAM_ERROR) && (i < unNumberOfPartitions); ++i) {
+			llnStart = max(pPartitions[i].StartingOffset.QuadPart, llnNextRead);
+			llnEnd = pPartitions[i].StartingOffset.QuadPart + pPartitions[i].PartitionLength.QuadPart;
+			if (llnEnd > llnStart) {
+				nZlibFlush = pPartitions[i].RewritePartition?Z_FINISH:Z_PARTIAL_FLUSH;
+				nReturn = ZlibCompressFromHandleRawEx(&strm, hDrive, a_dest, in, DEF_CHUNK_SIZE, out, DEF_CHUNK_SIZE, nZlibFlush, llnStart, llnEnd - llnStart);
+				llnNextRead = llnEnd;
+			}
+		}  // for (i = 1; (nReturn != Z_STREAM_ERROR) && (i < unNumberOfPartitions); ++i) {
+	}
+	else{nReturn = ZlibCompressFromHandleRawEx(&strm, hDrive, a_dest, in, DEF_CHUNK_SIZE, out, DEF_CHUNK_SIZE,Z_FINISH, 0, MINIMUM_DISK_SIZE_TO_COMPRESS);}
+
+
 returnPoint:
+	if(nZstrInited){(void)deflateEnd(&strm);}
 	if(hDrive!= INVALID_HANDLE_VALUE){CloseHandle(hDrive);}
+	if(pHeader){DestroyHeaderForDiscCompression(pHeader);}
 	return nReturn;
 }
 

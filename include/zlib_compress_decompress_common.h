@@ -12,6 +12,8 @@
 
 #define ZLIB_COMPR_DECOMPR_VERSION	1
 
+#define MINIMUM_DISK_SIZE_TO_COMPRESS	1024
+
 #define SIZE_OF_MAIN_HEADER			32  // B
 
 #define LAST_STRING_IN_THE_FILE		"End"
@@ -22,6 +24,13 @@
 
 #ifdef __cplusplus
 extern "C"{
+#endif
+
+#ifdef _WIN32
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <Windows.h>
+#else
 #endif
 
 enum TypeOfCompressedContent{CompressedContentDirectory,CompressedContentFile};
@@ -42,12 +51,28 @@ typedef struct SCompressDecompressHeader
 	uint32_t vReserved[4];
 }SCompressDecompressHeader;
 
+typedef struct SDiskCompDecompHeader
+{
+	uint32_t version;
+	uint16_t wholeHeaderSizeInBytes;
+	uint16_t isAnyPartAvalible;
+	int64_t  diskSize;
+	//uint64_t driveLayoutStrPointer;
+}SDiskCompDecompHeader;
+
 #define LEN_FROM_ITEM(_item)	(  sizeof(SFileItem)+(_item)->fileNameLen    )
 #define ITEM_NAME(_item)		(  ((char*)(_item))+sizeof(SFileItem)  )
 
 SCompressDecompressHeader* ZlibCreateCompressDecompressHeader(uint32_t headerSize, uint32_t typeOfCompressedContent, uint32_t numberOfItems);
 SCompressDecompressHeader* ZlibCreateAndCopyComprDecomprHeader(const SCompressDecompressHeader* orgin, int a_nAll);
 void DestroyCompressDecompressHeader(SCompressDecompressHeader* header);
+
+SDiskCompDecompHeader* DZlibCreateHeaderForDiscCompression(uint64_t diskSize, uint32_t diskInfoSize, const DRIVE_LAYOUT_INFORMATION_EX* driveInfo);
+SDiskCompDecompHeader* DZlibResizeHeaderForDiscDecompression(SDiskCompDecompHeader** base);
+void SortDiscCompressDecompressHeader(SDiskCompDecompHeader* header);
+void DestroyHeaderForDiscCompression(SDiskCompDecompHeader* header);
+
+#define DISK_INFO_FROM_ITEM(_item)   (  (DRIVE_LAYOUT_INFORMATION_EX*)( ((char*)(_item))+sizeof(SDiskCompDecompHeader)  )  )
 
 
 #ifdef __cplusplus

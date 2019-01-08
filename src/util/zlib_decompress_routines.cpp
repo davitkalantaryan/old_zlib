@@ -470,6 +470,12 @@ static int CallbackForDecompressToDrive(const void*a_buffer, int a_bufLen, void*
 				int nReturnLoc = GetLastError();
 				return -nReturnLoc;
 			}
+
+			bSuccs = DeviceIoControl(pUserData->driveHandle, IOCTL_DISK_UPDATE_PROPERTIES, NULL, 0, NULL, 0, &dwReturned, NULL);
+			if (!bSuccs) {
+				int nReturnLoc = GetLastError();
+				return -nReturnLoc;
+			}
 			SortDiscCompressDecompressHeader(pUserData->dch);
 		}
 	}

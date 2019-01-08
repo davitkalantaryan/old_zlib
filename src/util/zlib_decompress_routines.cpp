@@ -1,6 +1,10 @@
 
 // zlib_decompress_routines.cpp
 // 2018 Feb 11
+//
+// docs
+// https://www.installsetupconfig.com/win32programming/windowsdiskapis2_3.html 
+//
 
 #include <stdio.h>
 #include <string.h>

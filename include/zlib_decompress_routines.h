@@ -21,7 +21,10 @@ extern "C" {
 #endif
 
 // return 0, continues, non 0 stops
+#ifndef typeDecompressCallback_defined
 typedef int(*typeDecompressCallback)(const void*buffer, int bufLen, void*userData);
+#define typeDecompressCallback_defined
+#endif
 
 int ZlibDecompressBufferToCallback(
 	z_stream* a_strm,

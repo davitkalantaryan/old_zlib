@@ -59,20 +59,8 @@ typedef struct SUserDataForClbk
 }SUserDataForClbk;
 
 
-
-typedef struct SUserDataForDrive
-{
-	SDiskCompDecompHeader* dch;
-	int64_t	driveSize, alreadyReadBytes;
-#ifdef _WIN32
-	HANDLE	driveHandle;
-#else
-#endif
-}SUserDataForDrive;
-
 static int CallbackForDecompressToFile(const void*a_buffer, int a_bufLen, void*a_userData);
 static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void*a_userData);
-static int CallbackForDecompressToDrive(const void*a_buffer, int a_bufLen, void*a_userData);
 
 
 int ZlibDecompressBufferToCallback(
@@ -154,6 +142,7 @@ is an error reading or writing the files. */
 int ZlibDecompressFile(FILE *a_source, FILE *a_dest)
 {
 	int ret;
+	int nZstrInited = 0;
 	unsigned have;
 	z_stream strm;
 	unsigned char in[DEF_CHUNK_SIZE];
@@ -166,8 +155,8 @@ int ZlibDecompressFile(FILE *a_source, FILE *a_dest)
 	strm.avail_in = 0;
 	strm.next_in = Z_NULL;
 	ret = inflateInit(&strm);
-	if (ret != Z_OK)
-		return ret;
+	if (ret != Z_OK) { goto returnPoint; }
+	nZstrInited = 1;
 
 	/* decompress until deflate stream ends or end of file */
 	do {
@@ -209,8 +198,9 @@ int ZlibDecompressFile(FILE *a_source, FILE *a_dest)
 		/* done when inflate() says it's done */
 	} while (ret != Z_STREAM_END);
 
-	/* clean up and return */
-	(void)inflateEnd(&strm);
+	
+returnPoint:
+	if(nZstrInited){(void)inflateEnd(&strm);}
 	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
@@ -342,58 +332,6 @@ returnPoint:
 }
 
 
-#ifdef _WIN32
-
-int ZlibBurnImageFromWeb(const char *a_cpcUrl, HANDLE a_drive, __int64 a_nDiskSize)
-{
-	HINTERNET	hSession = NULL, hURL = NULL;
-	SUserDataForDrive aData;
-	z_stream strm;
-	int nReturn, nZstrInited =0, isDataInited=0;
-	unsigned char in[DEF_CHUNK_SIZE];
-	unsigned char out[DEF_CHUNK_SIZE];
-
-	/* allocate inflate state */
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
-	strm.avail_in = 0;
-	strm.next_in = Z_NULL;
-	//nReturn = deflateInit(&strm, a_nCompressionLeel);
-	nReturn = inflateInit(&strm);
-	if (nReturn != Z_OK){return nReturn;}
-	nZstrInited = 1;
-
-	hSession = InternetOpenA("DesyCloud", NULL, NULL, NULL, NULL);
-	if (!hSession){goto returnPoint;}
-
-	hURL = InternetOpenUrlA(
-		hSession, a_cpcUrl,
-		NULL, 0,
-		INTERNET_FLAG_HYPERLINK | INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE,
-		NULL);
-	if (!hURL) { goto returnPoint; }
-
-	aData.dch = DZlibCreateHeaderForDiscCompression(0,0,NULL); isDataInited=1;
-	aData.alreadyReadBytes = 0;
-	aData.driveHandle = a_drive;
-	aData.driveSize = a_nDiskSize;
-	nReturn=ZlibDecompressWebToCallback(&strm,hURL,in,DEF_CHUNK_SIZE,out,DEF_CHUNK_SIZE, CallbackForDecompressToDrive,&aData);
-
-returnPoint:
-	if(isDataInited){DestroyHeaderForDiscCompression(aData.dch);}
-	if(nZstrInited){(void)inflateEnd(&strm);}
-	if (hURL) { InternetCloseHandle(hURL); }
-	if (hSession) { InternetCloseHandle(hSession); }
-
-	return nReturn;
-}
-
-
-#endif  // #ifdef _WIN32
-
-
-
 /*////////////////////////////////////////////////////////////////////////////*/
 
 static int CallbackForDecompressToFile(const void*a_buffer, int a_bufLen, void*a_userData)
@@ -410,81 +348,6 @@ static int CallbackForDecompressToFile(const void*a_buffer, int a_bufLen, void*a
 
 static int PrepareDirIfNeeded(char* a_cpcFilePath,int a_nIsDir);
 
-static int CallbackForDecompressToDrive(const void*a_buffer, int a_bufLen, void*a_userData)
-{
-	static const int64_t scnHeaderSize(sizeof(SDiskCompDecompHeader));
-	BOOL bRet;
-	DWORD dwWrited;
-	SUserDataForDrive* pUserData = (SUserDataForDrive*)a_userData;
-
-	if(pUserData->alreadyReadBytes<scnHeaderSize){
-		char* pcHeader = (char*)pUserData->dch;
-		int64_t nSizeToCopy = scnHeaderSize - pUserData->alreadyReadBytes;
-		
-		nSizeToCopy = min(nSizeToCopy,(int64_t)a_bufLen);
-		memcpy(pcHeader+(size_t)pUserData->alreadyReadBytes,a_buffer,(size_t)nSizeToCopy);
-		a_buffer = ((const char*)a_buffer)+ ((size_t)nSizeToCopy);
-		a_bufLen -= ((int)nSizeToCopy);
-		pUserData->alreadyReadBytes += nSizeToCopy;
-
-		if(  pUserData->alreadyReadBytes >= scnHeaderSize  ){
-
-			if (!DZlibResizeHeaderForDiscDecompression(&pUserData->dch)) {return -4;}
-		}
-	}  // if(pUserData->alreadyReadBytes<8){
-
-	if (  (pUserData->alreadyReadBytes >= scnHeaderSize)&&(pUserData->alreadyReadBytes < (int64_t)pUserData->dch->wholeHeaderSizeInBytes)) {
-		int64_t nSizeToCopy = (int64_t)pUserData->dch->wholeHeaderSizeInBytes - pUserData->alreadyReadBytes;
-		char* pcHeader = (char*)pUserData->dch;
-		
-		nSizeToCopy = min(nSizeToCopy, (int64_t)a_bufLen);
-		memcpy(pcHeader + (size_t)pUserData->alreadyReadBytes, a_buffer, (size_t)nSizeToCopy);
-		a_buffer = ((const char*)a_buffer) + ((size_t)nSizeToCopy);
-		a_bufLen -= ((int)nSizeToCopy);
-		pUserData->alreadyReadBytes += nSizeToCopy;
-
-		if (pUserData->alreadyReadBytes >= (int64_t)pUserData->dch->wholeHeaderSizeInBytes) {
-			DRIVE_LAYOUT_INFORMATION_EX* pDiskInfo = DISK_INFO_FROM_ITEM(pUserData->dch);
-			CREATE_DISK aDiskStr;
-			DWORD dwReturned, dwInpLen = (DWORD)(pUserData->dch->wholeHeaderSizeInBytes - sizeof(SDiskCompDecompHeader));
-			BOOL bSuccs ;
-			//BOOL bSuccs = DeviceIoControl(pUserData->driveHandle,IOCTL_DISK_SET_DRIVE_LAYOUT_EX,DISK_INFO_FROM_ITEM(pUserData->dch),dwInpLen,NULL,0, &dwReturned, NULL);
-
-			aDiskStr.PartitionStyle = (PARTITION_STYLE)DISK_INFO_FROM_ITEM(pUserData->dch)->PartitionStyle;
-			aDiskStr.Gpt.DiskId = DISK_INFO_FROM_ITEM(pUserData->dch)->Gpt.DiskId;
-			aDiskStr.Gpt.MaxPartitionCount = DISK_INFO_FROM_ITEM(pUserData->dch)->Gpt.MaxPartitionCount;
-
-			bSuccs = DeviceIoControl(pUserData->driveHandle, IOCTL_DISK_CREATE_DISK, &aDiskStr, sizeof(aDiskStr), NULL, 0, &dwReturned, NULL);
-			if (!bSuccs) { 
-				int nReturnLoc=GetLastError();
-				return -nReturnLoc; 
-			}
-
-			bSuccs = DeviceIoControl(pUserData->driveHandle,IOCTL_DISK_UPDATE_PROPERTIES, NULL, 0, NULL, 0, &dwReturned, NULL);
-			if (!bSuccs) { 
-				int nReturnLoc=GetLastError();
-				return -nReturnLoc; 
-			}
-
-			bSuccs = DeviceIoControl(pUserData->driveHandle,IOCTL_DISK_SET_DRIVE_LAYOUT_EX, pDiskInfo,dwInpLen,NULL,0, &dwReturned, NULL);
-			if (!bSuccs) {
-				int nReturnLoc = GetLastError();
-				return -nReturnLoc;
-			}
-
-			bSuccs = DeviceIoControl(pUserData->driveHandle, IOCTL_DISK_UPDATE_PROPERTIES, NULL, 0, NULL, 0, &dwReturned, NULL);
-			if (!bSuccs) {
-				int nReturnLoc = GetLastError();
-				return -nReturnLoc;
-			}
-			SortDiscCompressDecompressHeader(pUserData->dch);
-		}
-	}
-
-	bRet=WriteFile(pUserData->driveHandle,a_buffer,a_bufLen,&dwWrited,NULL);
-	pUserData->alreadyReadBytes += a_bufLen;
-	return bRet?0:-1;
-}
 
 static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void*a_userData)
 {
@@ -603,26 +466,6 @@ static int CallbackForDecompressToFolder(const void*a_buffer, int a_bufLen, void
 static int PrepareDirIfNeeded(char* a_cpcFilePath,int a_nIsDir)
 {
 	int nRetDir = -1;
-#if 0
-	char *pcDelim,*pcNext;
-	char cDelim;
-
-	if ((pcDelim = strchr(a_cpcFilePath, '/'))) { cDelim = '/'; }
-	else if ((pcDelim = strchr(a_cpcFilePath, '\\'))) { cDelim = '\\'; }
-	while (pcDelim) {
-		pcNext = pcDelim + 1;
-		*pcDelim = 0;
-		nRetDir = _mkdir(a_cpcFilePath);
-		*pcDelim = cDelim;
-		if (nRetDir < 0) { 
-			if (errno == ENOENT) {return -3; }
-			else { nRetDir =0;}
-		}
-		if ((pcDelim = strchr(pcNext, '/'))) { cDelim = '/'; }
-		else if ((pcDelim = strchr(pcNext, '\\'))) { cDelim = '\\'; }
-	}
-
-#endif
 
 	if (a_nIsDir) {
 		nRetDir=_mkdir(a_cpcFilePath);

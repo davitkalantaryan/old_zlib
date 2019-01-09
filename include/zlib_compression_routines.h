@@ -34,7 +34,10 @@ typedef struct SCompressList{ SFileItemList	*first, *last; }SCompressList;
 #define Init_SCompressList(_list)	do{(_list)->first=(_list)->last=NULL;}while(0)
 
 // return 0, continues, non 0 stops
+#ifndef typeCompressCallback_defined
 typedef int (*typeCompressCallback)(const void*buffer,int bufLen,void*userData);
+#define typeCompressCallback_defined
+#endif
 
 SFileItemList*	ZlibCreateListItemCompress(const char* a_cpcFileName,
 	uint16_t fileNameLen,int a_isDir, const char* a_fullPath);

@@ -6,7 +6,7 @@
 
 
 message("file:  zlib.pri  ")
-include($${PWD}/../../common/common_qt/sys_common.pri)
+#include($${PWD}/../../common/common_qt/sys_common.pri)
 
 
 win32:  QMAKE_CFLAGS += /FI"zlib_first_include.h"

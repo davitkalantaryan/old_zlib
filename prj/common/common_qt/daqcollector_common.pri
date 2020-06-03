@@ -14,37 +14,48 @@ options = $$find(CONFIG, "2test")
 count(options, 1):message("!!! test2 version") DEFINES += TEST_VERSION112
 include(../../common/common_qt/doocs_server_common.pri)
 equals(CODENAME,"Boron") { 
-    message ("!!!!! No cpp 11 used")
+    #message ("!!!!! No cpp 11 used")
     DEFINES += no_cpp11
+    QMAKE_CXXFLAGS += -std=c++0x
 }
 else { 
-    message ("!!!!! cpp 11 is used")
+    #message ("!!!!! cpp 11 is used")
     QMAKE_CXXFLAGS += -std=c++0x
 }
 INCLUDEPATH += ../../../include
+INCLUDEPATH += ../../../contrib/cpp-raft/include
 INCLUDEPATH += ../../../src/tools
 
 # these two lines are just for inteligence
-INCLUDEPATH += /afs/ifh.de/@sys/products/root64/5.20.00/include
+#INCLUDEPATH += /afs/ifh.de/@sys/products/root64/5.20.00/include
 INCLUDEPATH += /doocs/lib/include
-SOURCES += ../../../src/server/pitz_daq_collectorproperties.cpp \
-    ../../../src/tmp/mailsender.cpp \
-    ../../../src/cpp11/thread_cpp11.cpp \
-    ../../../src/utils/pitz_daq_memory.cpp \
-    ../../../src/server/pitz_daq_singleentry.cpp \
-    ../../../src/cpp11/mutex_cpp11.cpp \
-    ../../../src/common/common_rwlock.cpp \
-    ../../../src/server/pitz_daq_eqfctcollector.cpp \
-    ../../../src/server/pitz_daq_collector_global.cpp
-HEADERS += ../../../src/server/pitz_daq_collectorproperties.hpp \
-    ../../../include/thread_cpp11.impl.hpp \
-    ../../../include/thread_cpp11.hpp \
-    ../../../include/common_defination.h \
-    ../../../include/pitz_daq_memory.hpp \
-    ../../../include/common_fifofast.impl.hpp \
-    ../../../include/common_fifofast.hpp \
-    ../../../src/server/pitz_daq_singleentry.hpp \
-    ../../../include/mutex_cpp11.hpp \
-    ../../../include/common_unnamedsemaphorelite.hpp \
-    ../../../include/common/rwlock.hpp \
-    ../../../src/server/pitz_daq_eqfctcollector.hpp
+SOURCES += \
+    $${PWD}/../../../src/server/pitz_daq_collectorproperties.cpp \
+    $${PWD}/../../../src/tools/mailsender.cpp \
+    $${PWD}/../../../contrib/cpp-raft/common/cpp11+/thread_cpp11.cpp \
+    $${PWD}/../../../contrib/cpp-raft/common/cpp11+/mutex_cpp11.cpp \
+    $${PWD}/../../../contrib/cpp-raft/common/cpp11+/shared_mutex_cpp14.cpp \
+    $${PWD}/../../../src/tools/pitz_daq_data_memory_base.cpp \
+    $${PWD}/../../../src/tools/pitz_daq_data_memory_forserver.cpp \
+    $${PWD}/../../../src/server/pitz_daq_singleentry.cpp \
+    $${PWD}/../../../src/server/pitz_daq_eqfctcollector.cpp \
+    $${PWD}/../../../src/server/pitz_daq_collector_global.cpp \
+    $${PWD}/../../../src/tools/pitz_daq_data_entryinfo.cpp
+
+HEADERS += \
+    $${PWD}/../../../src/server/pitz_daq_collectorproperties.hpp \
+    $${PWD}/../../../src/tools/mailsender.h \
+    $${PWD}/../../../contrib/cpp-raft/include/cpp11+/thread_cpp11.impl.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/cpp11+/thread_cpp11.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/cpp11+/common_defination.h \
+    $${PWD}/../../../contrib/cpp-raft/include/cpp11+/mutex_cpp11.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/common/common_unnamedsemaphorelite.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/common/impl.common_fifofast.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/common/common_fifofast.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/common/lists.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/common/impl.lists.hpp \
+    $${PWD}/../../../contrib/cpp-raft/include/cpp11+/shared_mutex_cpp14.hpp \
+    $${PWD}/../../../src/server/pitz_daq_singleentry.hpp \
+    $${PWD}/../../../src/server/pitz_daq_eqfctcollector.hpp \
+    $${PWD}/../../../include/pitz/daq/data/memory/base.hpp \
+    $${PWD}/../../../include/pitz/daq/data/memory/forserver.hpp

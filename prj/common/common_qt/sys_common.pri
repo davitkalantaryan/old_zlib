@@ -11,47 +11,54 @@
 #QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
 #QMAKE_CXXFLAGS_WARN_ON -= -Wunused-function
 
-DEEPNESS = ../../..
-
-optionsLib = $$find(TEMPLATE, "lib")
-
-count(optionsLib, 1){
-equals(TARGET_EXT,"mex*"){
-    TARGET_PATH=mbin
-    message("Matlab mex file creation")
-}else{
+contains( TEMPLATE, lib ) {
     TARGET_PATH=lib
-    DEEPNESS = ../../../../
-    message("Shared library creation")
-}
-}else{
+    #message("Shared library creation")
+} else {
     TARGET_PATH=bin
-    DEEPNESS = ../../../../
-    message("Binary file creation")
+    #message("Binary file creation")
 }
 
 
-win32{
-    CODENAME = win64
-    SYSTEM_PATH = sys/win64
-    }else {
-        macx{
-            CODENAME = mac
-            SYSTEM_PATH = sys/mac
-        }else {
-            DEFINES += LINUX
-            CODENAME = $$system(lsb_release -c | cut -f 2)
-            SYSTEM_PATH = sys/$$CODENAME
-        }
+PRJ_PWD_TMP = $$PRJ_PWD
+isEmpty(PRJ_PWD_TMP) {
+    PRJ_PWD = $${PWD}/../../..
 }
 
-message("!!! sys_common.pri: SYSTEM_PATH=$$SYSTEM_PATH")
+
+win32 {
+    contains(QMAKE_TARGET.arch, x86_64) {
+        ## Windows x64 (64bit) specific build here
+        CODENAME = win_x64
+        SYSTEM_PATH = sys/win_x64
+
+    } else {
+        ## Windows x86 (32bit) specific build here
+        CODENAME = win_x86
+        SYSTEM_PATH = sys/win_x86
+
+    }
+
+} else:mac {
+    CODENAME = mac
+    SYSTEM_PATH = sys/mac
+} else:android {
+    CODENAME = android
+    SYSTEM_PATH = sys/android
+} else {
+    DEFINES += LINUX
+    CODENAME = $$system(lsb_release -c | cut -f 2)
+    SYSTEM_PATH = sys/$$CODENAME
+}
+
+
+message("!!! sys_common.pri: SYSTEM_PATH=$${PRJ_PWD}/$${SYSTEM_PATH}")
 
 # Debug:DESTDIR = debug1
-DESTDIR = $$DEEPNESS/$$SYSTEM_PATH/$$TARGET_PATH
-OBJECTS_DIR = ../../../$$SYSTEM_PATH/.objects
-CONFIG += debug
+DESTDIR = $${PRJ_PWD}/$${SYSTEM_PATH}/$${TARGET_PATH}
+OBJECTS_DIR = $${PRJ_PWD}/$${SYSTEM_PATH}/.objects/$${TARGET}
 
+#CONFIG += debug
 #CONFIG += c++11
 #QMAKE_CXXFLAGS += -std=c++0x
 # greaterThan(QT_MAJOR_VERSION, 4):QT += widgets

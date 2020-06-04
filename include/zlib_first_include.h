@@ -3,12 +3,17 @@
 // to include ->  #include "zlib_first_include.h"
 // created on 2018 Feb 11
 
-#ifndef __zlib_first_include_h__
-#define __zlib_first_include_h__
+#ifndef zlib_first_include_h
+#define zlib_first_include_h
 
+#ifdef _WIN32
 #include <io.h>
-
 #define write _write
+#else
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 
 #if defined(_MSC_VER) & (_MSC_VER>1400)
 #pragma warning (disable:4996)
@@ -20,4 +25,4 @@
 #endif
 
 
-#endif  // #ifndef __zlib_first_include_h__
+#endif  // #ifndef zlib_first_include_h

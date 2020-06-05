@@ -11,7 +11,7 @@
 
 namespace qt{
 
-bool DecompressFile(const QString& a_compressedFilePath, const QString& targetFolderPath);
+bool DecompressFile(const QString& a_compressedFilePath, const QString& targetFolderOrFilePath);
 
 }
 

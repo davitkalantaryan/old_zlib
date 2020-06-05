@@ -42,6 +42,8 @@ static bool CompressFile(const QString& a_filePath, const QString& a_targetFileP
 	z_stream strm;
 	SRawCompressHeader zipRawHeader = INIT_CD_MAIN_HEADER(0);
 	
+	zipRawHeader.stats.bits.isDirectory = 0;
+	
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
@@ -57,12 +59,15 @@ static bool CompressFile(const QString& a_filePath, const QString& a_targetFileP
 		goto returnPoint;
 	}
 	
+	zipRawHeader.itemsHeaderSizeOrFileSize = inputFile.size();
+	
 	compressedData = WriteByteArrayToZipFile(&strm,0,&zipRawHeader,sizeof(SRawCompressHeader));
 	targetFile.write(compressedData);
 	
 	arrayToCompress = inputFile.readAll();
 	inputFile.close();
 	compressedData = WriteByteArrayToZipFile(&strm,1,arrayToCompress.data(),arrayToCompress.size());
+	targetFile.write(compressedData);
 		
 	bReturnFromFunc = true;
 returnPoint:
@@ -87,6 +92,8 @@ static bool CompressFolder(const QString& a_foldePath, const QString& a_targetFi
 	size_t unOutVectorSize, unIndex;
 	QString filePath;
 	
+	zipRawHeader.stats.bits.isDirectory = 1;
+	
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
@@ -102,6 +109,8 @@ static bool CompressFolder(const QString& a_foldePath, const QString& a_targetFi
 	if(!targetFile.open(QIODevice::WriteOnly)){
 		goto returnPoint;
 	}
+	
+	zipRawHeader.itemsHeaderSizeOrFileSize = nHeadersSize;
 		
 	compressedData = WriteByteArrayToZipFile(&strm,0,&zipRawHeader,sizeof(SRawCompressHeader));
 	targetFile.write(compressedData);
@@ -112,8 +121,8 @@ static bool CompressFolder(const QString& a_foldePath, const QString& a_targetFi
 	
 	unOutVectorSize = outputVector.size();
 	for(unIndex=0;unIndex<unOutVectorSize;++unIndex){
-		if(!outputVector[unIndex].raw.isDirectory){
-			if(outputVector[unIndex].raw.shouldRootDirBeAdded){
+		if(!outputVector[unIndex].raw.stats.bits.isDirectory){
+			if(outputVector[unIndex].raw.stats.bits.shouldRootDirBeAdded){
 				filePath = a_foldePath + outputVector[unIndex].itemFullPath;
 			}
 			else{
@@ -152,7 +161,8 @@ static QByteArray PrepareByteStremFromHeadersList( const ::std::vector< SCompres
 	for(unIndex=0;unIndex<cunHeadersCount;++unIndex){
 		asciiPath = a_headerList[unIndex].itemFullPath.toStdWString();
 		memcpy(pcData,&(a_headerList[unIndex].raw),sizeof(SRawCompressedFileItem));
-		memcpy(pcData+sizeof(SRawCompressedFileItem),asciiPath.c_str(),2*a_headerList[unIndex].raw.itemPathLengthPlus1);
+		memcpy(pcData+sizeof(SRawCompressedFileItem),asciiPath.c_str(),sizeof(wchar_t)*a_headerList[unIndex].raw.itemPathLengthPlus1);
+		qDebug()<< QString::fromWCharArray(reinterpret_cast<wchar_t*>(pcData+sizeof(SRawCompressedFileItem)));
 		pcData += ITEM_TOTAL_LENGTH_FROM_ITEM_PTR(&(a_headerList[unIndex].raw));
 	}
 	
@@ -197,7 +207,7 @@ static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< S
 		
 		if(itemPath.startsWith(a_foldePath)){
 			itemPathRelative = itemPath.mid(a_foldePath.size());
-			aNewItem.raw.shouldRootDirBeAdded = 1;
+			aNewItem.raw.stats.bits.shouldRootDirBeAdded = 1;
 		}
 		else{
 			itemPathRelative = itemPath;
@@ -219,7 +229,7 @@ static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< S
 		}
 		
 		if(itemFileInfo.isDir()){
-			aNewItem.raw.isDirectory = 1;
+			aNewItem.raw.stats.bits.isDirectory = 1;
 		}
 		else{
 			aNewItem.raw.fileSize = static_cast<uint32_t>(itemFileInfo.size());

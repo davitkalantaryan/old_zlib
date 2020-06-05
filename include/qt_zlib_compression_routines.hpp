@@ -9,7 +9,7 @@
 
 #include <qt_zlib_compress_decompress_common.hpp>
 
-namespace qt{
+namespace qtcore{
 
 bool CompressFileOrFolder(const QString& a_fileOrFolderPath, const QString& targetFilePath, int a_compressionLevel);
 

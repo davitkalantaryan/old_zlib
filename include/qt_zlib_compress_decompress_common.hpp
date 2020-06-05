@@ -39,7 +39,7 @@ struct SRawCompressedFileItem{
 	uint32_t	fileSize ;
 };
 
-namespace qt{
+namespace qtcore{
 
 struct SCompressedFileItem{
 	SRawCompressedFileItem	raw;

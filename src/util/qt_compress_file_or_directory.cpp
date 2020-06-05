@@ -13,7 +13,7 @@
 #include <QByteArray>
 #include <string>
 
-namespace qt{
+namespace qtcore{
 
 static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< SCompressedFileItem >* a_pOutputVector );
 static QByteArray PrepareByteStremFromHeadersList( const ::std::vector< SCompressedFileItem >& a_headerList, int a_nHeaderSize );

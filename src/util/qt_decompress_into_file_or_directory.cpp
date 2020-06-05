@@ -24,7 +24,7 @@
 
 #define DEF_CHUNK_SIZE				16384
 
-namespace qt{
+namespace qtcore{
 
 static void SwapStatic(uint16_t* a_pDataToSwap);
 static void SwapStatic(uint32_t* a_pDataToSwap);
@@ -38,7 +38,7 @@ static bool DecompressContentOfByteArray(
 		size_t* a_punCurrentIndexOfFile);
 
 
-bool DecompressFile(const QString& a_compressedFilePath, const QString& a_decompressedFileOrFolderPath)
+bool DecompressFile(const QString& a_compressedFilePath, const QString& a_decompressedFileOrFolderPath, ::std::vector< ::qtcore::SCompressedFileItem >* a_pVector)
 {
 	bool bReturnFromFunc = false;
 	int nReturnFromZlibRoutine;
@@ -50,13 +50,14 @@ bool DecompressFile(const QString& a_compressedFilePath, const QString& a_decomp
 	QByteArray arrayForItemsList;
 	unsigned char* in;
 	qint64	 readSize;
-	::std::vector< SCompressedFileItem > outputVector;
+	::std::vector< SCompressedFileItem > outputVectorHere;
 	SRawCompressHeader zipRawHeader = INIT_CD_MAIN_HEADER(0);
 	size_t unMainHeaderOffset = 0;
 	size_t unFileItemsOffset = 0;
 	size_t unCurrentIndexOfFile=0;
 	size_t unCurrentFileOffset=0;
 	bool bFinished = false;
+	::std::vector< SCompressedFileItem >& outputVector = a_pVector? (*a_pVector) : outputVectorHere;
 	
 	zipRawHeader.stats.bits.isEndianDiscovered = 0;
 	

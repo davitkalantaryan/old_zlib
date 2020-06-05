@@ -7,11 +7,12 @@
 #define qt_zlib_decompress_routines_hpp
 
 #include <qt_zlib_compress_decompress_common.hpp>
+#include <vector>
 
 
-namespace qt{
+namespace qtcore{
 
-bool DecompressFile(const QString& a_compressedFilePath, const QString& targetFolderOrFilePath);
+bool DecompressFile(const QString& a_compressedFilePath, const QString& targetFolderOrFilePath, ::std::vector< ::qtcore::SCompressedFileItem >* a_pVector);
 
 }
 

@@ -234,7 +234,7 @@ static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< S
 		else{
 			aNewItem.raw.fileSize = static_cast<uint32_t>(itemFileInfo.size());
 		}
-		aNewItem.raw.itemPathLengthPlus1 = itemPathRelative.toStdWString().length()+1;
+		aNewItem.raw.itemPathLengthPlus1 = static_cast<uint16_t>(itemPathRelative.toStdWString().length())+1;
 		aNewItem.itemFullPath = itemPathRelative;
 		
 		a_pOutputVector->push_back(aNewItem);

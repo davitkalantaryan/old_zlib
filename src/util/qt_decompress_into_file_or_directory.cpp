@@ -173,7 +173,7 @@ static bool DecompressContentOfByteArray(
 					memcpy(a_pRawHeader,out,unCopySize);
 					out += unCopySize;
 					unMainHeaderOffset += unCopySize;
-					decompressedStreamSize -= unCopySize;
+					decompressedStreamSize -= static_cast<uInt>(unCopySize);
 				}
 				else{
 					memcpy(a_pRawHeader,out,decompressedStreamSize);
@@ -207,7 +207,7 @@ static bool DecompressContentOfByteArray(
 							memcpy(pItemsListPtr,out,unCopySize);
 							out += unCopySize;
 							unFileItemsOffset += unCopySize;
-							decompressedStreamSize -= unCopySize;
+							decompressedStreamSize -= static_cast<uInt>(unCopySize);
 						}
 						else{
 							memcpy(pItemsListPtr,out,decompressedStreamSize);
@@ -277,7 +277,7 @@ static bool DecompressContentOfByteArray(
 										*a_pFinished = true;
 										return true;
 									}
-									decompressedStreamSize -= unCopySize;
+									decompressedStreamSize -= static_cast<uInt>(unCopySize);
 								}
 								else{
 									a_pDecompressedFile->write(reinterpret_cast<char*>(out),decompressedStreamSize);

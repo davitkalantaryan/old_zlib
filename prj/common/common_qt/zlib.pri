@@ -16,6 +16,7 @@ else {
 }
 
 INCLUDEPATH += $${PWD}/../../../include
+INCLUDEPATH += $${PWD}/../../../contrib/zlib
 
 SOURCES		+=	\
 	$${PWD}/../../../contrib/zlib/adler32.c			\

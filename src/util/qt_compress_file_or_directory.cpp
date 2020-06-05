@@ -18,8 +18,61 @@ namespace qt{
 static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< SCompressedFileItem >* a_pOutputVector );
 static QByteArray PrepareByteStremFromHeadersList( const ::std::vector< SCompressedFileItem >& a_headerList, int a_nHeaderSize );
 static QByteArray WriteByteArrayToZipFile(z_stream* a_strm, int a_flush, const void* a_byteStream, int a_byteStreamSize);
+static bool CompressFolder(const QString& a_foldePath, const QString& a_targetFilePath, int a_compressionLevel);
+static bool CompressFile(const QString& a_filePath, const QString& a_targetFilePath, int a_compressionLevel);
 
-bool CompressFolder(const QString& a_foldePath, const QString& a_targetFilePath, int a_compressionLevel)
+
+bool CompressFileOrFolder(const QString& a_fileOrFolderPath, const QString& a_targetFilePath, int a_compressionLevel)
+{
+	if(QFileInfo(a_fileOrFolderPath).isDir()){
+		return CompressFolder(a_fileOrFolderPath,a_targetFilePath,a_compressionLevel);
+	}
+	
+	return CompressFile(a_fileOrFolderPath,a_targetFilePath,a_compressionLevel);
+}
+
+static bool CompressFile(const QString& a_filePath, const QString& a_targetFilePath, int a_compressionLevel)
+{
+	bool bReturnFromFunc = false;
+	int nReturnFromZlibRoutine;
+	QFile inputFile(a_filePath);
+	QFile targetFile(a_targetFilePath);
+	QByteArray arrayToCompress;
+	QByteArray compressedData;
+	z_stream strm;
+	SRawCompressHeader zipRawHeader = INIT_CD_MAIN_HEADER(0);
+	
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	nReturnFromZlibRoutine = deflateInit(&strm, a_compressionLevel);
+	if (nReturnFromZlibRoutine != Z_OK)
+		return false;
+	
+	if(!targetFile.open(QIODevice::WriteOnly)){
+		goto returnPoint;
+	}
+	
+	if(!inputFile.open(QIODevice::ReadOnly)){
+		goto returnPoint;
+	}
+	
+	compressedData = WriteByteArrayToZipFile(&strm,0,&zipRawHeader,sizeof(SRawCompressHeader));
+	targetFile.write(compressedData);
+	
+	arrayToCompress = inputFile.readAll();
+	inputFile.close();
+	compressedData = WriteByteArrayToZipFile(&strm,1,arrayToCompress.data(),arrayToCompress.size());
+		
+	bReturnFromFunc = true;
+returnPoint:
+	targetFile.close();
+	deflateEnd(&strm); // if not inited then this line will not run
+	return bReturnFromFunc;
+}
+
+
+static bool CompressFolder(const QString& a_foldePath, const QString& a_targetFilePath, int a_compressionLevel)
 {
 	int nReturnFromZlibRoutine;
 	bool bReturnFromFunc = false;
@@ -30,7 +83,7 @@ bool CompressFolder(const QString& a_foldePath, const QString& a_targetFilePath,
 	::std::vector< SCompressedFileItem > outputVector;
 	QByteArray arrayToCompress;
 	QByteArray compressedData;
-	SRawCompressHeader zipRawHeader = {1,0,0,0};
+	SRawCompressHeader zipRawHeader = INIT_CD_MAIN_HEADER(1);
 	size_t unOutVectorSize, unIndex;
 	QString filePath;
 	

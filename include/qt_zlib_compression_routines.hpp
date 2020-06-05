@@ -1,19 +1,18 @@
 
 
-// zlib_compression_routines.h
-// to include ->  #include "zlib_compression_routines.h"
+// qt_zlib_compression_routines.hpp
+// to include ->  #include "qt_zlib_compression_routines.hpp"
 // 2018 Feb 12
 
 #ifndef qt_zlib_compression_routines_hpp
 #define qt_zlib_compression_routines_hpp
 
 #include <qt_zlib_compress_decompress_common.hpp>
-#include <QString>
-
 
 namespace qt{
 
-bool CompressFolder(const QString& a_foldePath, const QString& targetFilePath, int a_compressionLevel);
+bool CompressFileOrFolder(const QString& a_fileOrFolderPath, const QString& targetFilePath, int a_compressionLevel);
+bool DecompressFile(const QString& a_foldePath, const QString& targetFilePath, int a_compressionLevel);
 
 }
 

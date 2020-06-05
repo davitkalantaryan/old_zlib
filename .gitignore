@@ -40,3 +40,4 @@ src/.original/*/*
 contrib/doocs/*
 #include/.private/*.h
 #include/.private/*/*.h
+include/qt_zlib_compression_routines.hpp.autosave

@@ -271,7 +271,8 @@ static bool DecompressContentOfByteArray(
 								if(decompressedStreamSize>unCopySize){
 									a_pDecompressedFile->write(reinterpret_cast<char*>(out),unCopySize);
 									out += unCopySize;
-									unCurrentFileOffset += unCopySize;
+									//unCurrentFileOffset += unCopySize; // todo: think on this
+									unCurrentFileOffset = 0;
 									a_pDecompressedFile->close();
 									if((++unCurrentIndexOfFile)>=unNumberOfDirectoryItems){
 										*a_pFinished = true;
@@ -287,6 +288,15 @@ static bool DecompressContentOfByteArray(
 								}			
 								
 							}  // if(unCurrentFileOffset<a_pOut->at(unCurrentIndexOfFile).raw.fileSize){ 
+							// !!!!!! 2020 Jun 08 8 lines below added newly
+							else{
+								unCurrentFileOffset = 0;
+								a_pDecompressedFile->close();
+								if((++unCurrentIndexOfFile)>=unNumberOfDirectoryItems){
+									*a_pFinished = true;
+									return true;
+								}
+							}
 						}
 						
 						// to continue

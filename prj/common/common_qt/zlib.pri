@@ -15,8 +15,8 @@ else {
 	QMAKE_CFLAGS += -Wimplicit-fallthrough=0
 }
 
-INCLUDEPATH += $${PWD}/../../../include
-INCLUDEPATH += $${PWD}/../../../contrib/zlib
+INCLUDEPATH += "$${PWD}/../../../include"
+INCLUDEPATH += "$${PWD}/../../../contrib/zlib"
 
 SOURCES		+=	\
 	$${PWD}/../../../contrib/zlib/adler32.c			\

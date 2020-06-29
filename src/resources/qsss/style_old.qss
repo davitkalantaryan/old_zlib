@@ -1,0 +1,595 @@
+/* ///////////// Global styles ////////////// */
+
+QComboBox {
+    color: black;
+    font: 14px "Roboto" ;
+    padding: 1px 0px 1px 3px; /* This (useless) line resolves a bug with the font color */
+}
+
+QComboBox::drop-down
+{
+    border: 0px;
+}
+
+QComboBox::down-arrow {
+    image: url(:/DropDownArrow.png);
+    width: 12px;
+    height: 12px;
+    margin-right:4px;
+}
+QListWidget { show-decoration-selected:0; }
+QScrollBar:vertical { width: 2px; }
+QListWidget::item { outline: none; }
+QListWidget::item:selected { background-color: white;}
+QListWidget::item:hover:!selected { background-color: white; }
+
+/* ///////////// End Global styles ////////////// */
+
+/*///////////////////// Begin Mainwidget //////////////////// */
+QWidget#mainWidget
+{
+    background-color:#fff;
+}
+
+QPushButton#m_firstPageButton,QPushButton#m_secondPageButton {
+   border:none;
+   width: 140px;
+   text-align: center;
+   font-size: 18px;
+   color: gray;
+   min-height: 30px;
+   margin:10px;
+}
+
+QPushButton#m_secondPageButton
+{
+   width: 180px;
+}
+
+
+QPushButton#m_secondPageButton_Click,QPushButton#m_firstPageButton_Click
+{
+    border: 2px solid #0386E7;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    color: #0386E7;
+    width: 140px;
+    text-align: center;
+    font-size: 18px;
+    min-height: 30px;
+    margin:8px;
+}
+
+QPushButton#m_secondPageButton_Click
+{
+   width: 180px;
+}
+
+QPushButton#m_secondPageButton_Click:hover,QPushButton#m_firstPageButton_Click:hover
+{
+    border: 2px solid #0386E7;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    color: #0386E7;
+}
+
+QPushButton#m_secondPageButton:hover,QPushButton#m_firstPageButton:hover
+{
+    border: 2px solid #0386E7;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    color: #0386E7;
+}
+
+QPushButton#m_secondPageButton_Click:pressed,QPushButton#m_firstPageButton_Click:pressed
+{
+    background-color:#C7EBFF;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding-top:5px;
+
+}
+
+QPushButton#m_secondPageButton:pressed,QPushButton#m_firstPageButton:pressed
+{
+    background-color:#C7EBFF;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding-top:2px;
+
+}
+
+QPushButton#m_updateButton
+{
+    border: 2px solid gray;
+    border-radius:5px;
+
+}
+
+QPushButton#m_updateButton:pressed
+{
+    border: 2px solid #0386E7;
+}
+
+QLabel#m_updateStatusLabel
+{
+    color:#808080;
+}
+
+/*///////////////////// End Mainwidget //////////////////// */
+
+
+
+/*///////////////////// Begin ControlWidget //////////////////// */
+QWidget#controlWidget
+{
+    background-color:white;
+}
+QPushButton#m_ClockStatusButton
+{
+    min-height:42px;
+    padding-left:20px;
+    padding-right:20px;
+    border-radius:5px;
+    color:White;
+    background-color:#20AB8C;
+    font:bold "Roboto";
+    font-size:16px;
+      margin-left:10px;
+}
+QPushButton#m_ClockStatusButton:hover
+{
+    background-color:black;
+}
+
+QLabel#m_BreakTimeStatusTimeStrlabel
+{
+    margin-left:5px;
+    font:bold 15px "Roboto";
+    color:gray;
+}
+QPushButton#m_ClockStatusButton:pressed
+{
+    background-color:#FBA64D;
+}
+
+QPushButton#m_BreakStatusButton
+{
+    min-height:34px;
+    padding-left:10px;
+    padding-right:10px;
+    margin-top:5px;
+    margin-left:10px;
+    border-radius:5px;
+    /*background-color:#DADFE3;*/
+    background-color:#8282EE;
+    color:#fff;
+    font:bold 14px "Roboto";
+
+}
+QPushButton#m_BreakStatusButton:hover
+{
+    background-color:#000;
+}
+
+QLabel#m_HourStatusLabel
+{
+    font: 42px "Franklin Gothic Medium";
+    color:#133F58;
+}
+
+QLabel#m_TrackingStatuslabel, QLabel#m_CurrentDateTimeStatuslabel
+{
+    color:gray;
+    margin-left:5px;
+    margin-right:5px;
+}
+QLabel#m_BreakTimeStatuslabel
+{
+    margin-left:5px;
+    color:#94A3AD;
+    font:bold 14px "New Century Schoolbook";
+}
+
+QListWidget#m_TimeTrackingHistoryList
+{
+    border:2px solid #E0E0E0;
+    border-left:none;
+    border-right:none;
+    background-color:#FDFDFD;
+}
+/*///////////////////// End ControlWidget //////////////////// */
+
+
+/*///////////////////// Begin CustomListWidgetItem //////////////////// */
+QWidget#customListWidgetItem
+{
+  background-color:#fff;
+  border:none;
+}
+
+QWidget#m_ResultWidget
+{
+    background-color:#F5F5F5;
+    border:1px solid #C7C7C7;
+    margin-left:20px;
+    margin-right:20px;
+
+    padding:10px;
+    border-radius:5px;
+    max-height:65px;
+}
+
+QWidget#m_ResultWidget_Click
+{
+    background-color: white;
+    border:1px solid orange;
+    margin-left:20px;
+    margin-right:20px;
+
+    padding:10px;
+    border-radius:5px;
+    max-height:65px;
+}
+
+
+QWidget#m_ResultWidget:hover
+{
+    background-color: white;
+    border:1px solid orange;
+}
+
+
+QLabel#m_HeaderLabel
+{
+    margin-left:20px;
+     color:#919191;
+     font:bold 13px "Roboto";
+}
+QLabel#m_CheckInLabel,QLabel#m_CheckInTimeLabel
+{
+    margin-left:40px;
+    color:#61717E;
+    font:bold 14px "Roboto";
+    padding-bottom:0;
+    margin-bottom:0;
+
+}
+QLabel#m_CheckOutLabel,QLabel#m_ResultHourLabel,QLabel#m_CheckOutTimeLabel
+{
+    color:#61717E;
+    font:bold 14px "Roboto";
+}
+
+QLabel#m_CheckOutTimeLabel,QLabel#m_CheckInTimeLabel
+{
+    color:#000;
+    margin-top:5px;
+}
+QLabel#m_ResultHourLabel
+{
+    margin-right:40px;
+}
+
+/*///////////////////// End CustomListWidgetItem //////////////////// */
+
+
+
+/*///////////////////// Begin BrowserHistoryWidget //////////////////// */
+
+QWidget#browserHistoryWidget
+{
+    background-color:#fff;
+}
+QLabel#m_TaskNameLabel1
+{
+    margin-left:20px;
+    font:bold 16px "Roboto";
+    color:gray;
+}
+QComboBox#m_ResentTasksHistoryCombobox
+{
+    border:none;
+    padding:5px;
+    font:bold 14px "Roboto";
+    background-color:#fff;
+    margin-right:10px;
+    color:#61717E;
+}
+
+QLabel#m_TaskNameLabel
+{
+    margin-left:20px;
+    font:16px "Roboto";
+    color:#284B61;
+}
+
+QLabel#m_BottomStatusLabel
+{
+
+    font:12px "Roboto";
+}
+
+QWidget#m_TopWidget2
+{
+    min-height:130px;
+    max-height:150px;
+}
+QPushButton#m_resentProjectsButton
+{
+   color:#1273EB;
+   border:none;
+   font:bold 16px "Roboto";
+   max-width:150px;
+   min-height:30px;
+}
+QPushButton#m_resentProjectsButton:pressed
+{
+  border-bottom:2px solid #1273EB;
+}
+/*///////////////////// End BrowserHistoryWidget //////////////////// */
+
+
+
+/*///////////////////// Begin BrowserHistoryCustomListWidgetItem //////////////////// */
+
+QWidget#browserHistoryCustomListWidgetItem
+{
+     background-color:#fff;
+}
+
+QWidget#m_MainWg
+{
+    border-radius:5px;
+    background-color:#F6F6F6;
+
+    max-height:65px;
+    min-height:55px;
+    border:1px solid #E0E0E0;
+}
+
+QLabel#m_LogoLabel
+{
+    margin:20px;
+    color:#fff;
+    font:bold 18px "Roboto";
+}
+QLabel#m_TimeCheckStatusLabel
+{
+    font: 15px "Roboto";
+    color:#808080;
+}
+
+QPushButton#m_MoreInfoAboutTaskButton
+{
+    border:none;
+    color:#808080;
+    font-size:14px;
+
+}
+
+QPushButton#m_MoreInfoAboutTaskButton:pressed
+{
+    border:2px solid #808080;
+    border-left:none;
+    border-right:none;
+    border-top:none;
+}
+/*///////////////////// End BrowserHistoryCustomListWidgetItem //////////////////// */
+
+
+
+
+
+/*///////////////////// Begin TaskResultStatusWidget //////////////////// */
+QWidget#taskResultStatusWidget
+{
+    background-color:#FDFDFD;
+}
+
+QWidget#m_BottomWidget
+{
+    background-color:#fff;
+    border:1px solid #D7D7D7;
+    border-radius:5px;
+}
+
+QTextEdit#m_TaskInfoTextBox
+{
+    border:none;
+}
+
+QLabel#m_TaskSpentTimeLabel
+{
+    font:bold 32px "Franklin Gothic Medium";
+    color:#464646;
+}
+
+QPushButton#m_BackTaskListButton
+{
+    color:#1273EB;
+    border:none;
+    font:bold 16px "Roboto";
+    max-width:60px;
+}
+QPushButton#m_BackTaskListButton:pressed
+{
+   border-bottom:2px solid #1273EB;
+}
+
+QPushButton#m_PlayButton,QPushButton#m_Item_PlayButton
+{
+    padding:10px;
+    margin-left:10px;
+    border:1px solid #D7D7D7;
+    border-radius:5px;
+    max-width:28px;
+}
+
+QPushButton#m_PlayButton:hover,QPushButton#m_Item_PlayButton:hover
+{
+    border:1px solid #1C8DFF;
+}
+
+QPushButton#m_PlayButton:pressed,QPushButton#m_Item_PlayButton:pressed
+{
+    border:2px solid #1C8DFF;
+    background-color:#f5f5f5;
+}
+
+/*  ____Text : Write Query____ */
+QLabel#m_TaskNameLabel
+{
+     font:bold 18px "Roboto";
+     color:gray;
+     margin-left:0;
+}
+
+/*  ____Text : High____ */
+QLabel#m_TaskStatusLabel
+{
+    color:#FF9B9B;
+    font:bold 18px "Roboto";
+}
+
+QComboBox#m_TaskStatusComboList
+{
+    border-radius:5px;
+    border:1px solid #1C8DFF;
+    min-height:30px;
+    min-width:140px;
+}
+
+QLabel#m_TaskStatusIconLabel
+{
+    border-radius:11px;
+    min-height: 20px;
+    margin-left:30px;
+    max-width: 20px;
+    padding:3px;
+    background-color:#FF9B9B;
+}
+/*///////////////////// End TaskResultStatusWidget //////////////////// */
+
+
+
+
+/*///////////////////// Begin ProjectHistoryListCustomItem //////////////////// */
+QWidget#projectHistoryListCustomItem
+{
+    background-color:#fff;
+}
+QLabel#m_Item_TaskDurationLabel
+{
+    margin-right:10px;
+    font:bold 15px "Roboto";
+}
+
+QPushButton#m_Item_StatusIcoLabel
+{
+    border-radius:11px;
+    min-height: 20px;
+    margin-left:30px;
+    max-width: 20px;
+    padding:3px;
+    background-color:#FF9B9B;
+}
+
+QWidget#m_MainPrWidget
+{
+    background-color:#fff;
+    border: 1px solid #e5e5e5;
+    margin:20px;
+    border-radius:5px;
+    min-height:90px;
+    max-height:90px;
+}
+
+QPushButton#m_Item_PlayButton
+{
+    margin-right:30px;
+    margin-top:10px;
+
+}
+
+QLabel#m_Item_TaskNameLabel
+{
+    margin-left:30px;
+    font:bold 14px "Roboto";
+    color:#808080;
+}
+
+QLabel#m_Item_TaskCommitsCountLabel
+{
+    max-width:22px;
+    min-width:22px;
+    min-height:20px;
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
+    font-size:12px;
+    padding:2px;
+    background-color:#e5e5e5;
+}
+
+QLabel#m_Item_TaskStatusLabel
+{
+    color:#808080;
+    font:bold 12px "Roboto";
+}
+/*///////////////////// End ProjectHistoryListCustomItem //////////////////// */
+
+
+
+
+/*///////////////////// Begin BrowserSearchTasksHistoryWidget //////////////////// */
+
+QLineEdit#m_SearchLineEdit
+{
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top:10px;
+    min-height: 33px;
+    font:16px "Roboto";
+    border-radius:5px;
+    border:1px solid #D7D7D7;
+    padding-left:30px;
+    background-image: url(:/img/search.png); /* actual size, e.g. 16x16 */
+    background-repeat: no-repeat;
+    background-position: left;
+}
+
+QLineEdit#m_SearchLineEdit:focus
+{
+  border:1px solid #1C8DFF;
+}
+
+QLabel#m_BottomStatusLabel
+{
+    color:gray;
+    font:bold 12px "Roboto";
+    margin:20 0 0 20;
+
+}
+QWidget#m_TopWidget
+{
+    min-height:130px;
+    max-height:150px;
+}
+
+
+/*///////////////////// End BrowserSearchTasksHistoryWidget //////////////////// */
+
+
+
+
+
+
+
+
+
+
+
+

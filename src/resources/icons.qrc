@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/user_ico.png</file>
+        <file>img/update_ico.png</file>
+        <file>img/more_info.png</file>
+        <file>img/play_icon.png</file>
+        <file>img/less_ico.png</file>
+        <file>img/DropDownArrow.png</file>
+        <file>img/search.png</file>
+        <file>img/high_status_icon.png</file>
+        <file>img/calendar.png</file>
+        <file>img/clock.png</file>
+        <file>img/avatar.png</file>
+        <file>img/logo1.png</file>
+        <file>img/settings.png</file>
+        <file>img/stop_icon.png</file>
+        <file>img/check_icon.png</file>
+        <file>img/wnd_icon.png</file>
+        <file>img/EmpMonitorLogo_white.png</file>
+        <file>img/loading.png</file>
+    </qresource>
+</RCC>

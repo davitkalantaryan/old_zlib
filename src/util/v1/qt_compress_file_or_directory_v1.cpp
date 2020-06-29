@@ -4,8 +4,9 @@
 // created by:		D. Kalantaryan (davit.kalantaryan@gmail.com)
 // 
 
-#include <qt_zlib_compression_routines.hpp>
+#include <common/zlib/v1/compression_routines.hpp>
 #include <zlib_compress_decompress_common_private.hpp>
+#include <v1/zlib_compress_decompress_common_v1_private.hpp>
 #include <vector>
 #include <QDirIterator>
 #include <QFile>
@@ -14,7 +15,7 @@
 #include <QByteArray>
 #include <string>
 
-namespace qtcore{
+namespace common{ namespace zlib{ namespace v1{
 
 static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< SCompressedFileItem >* a_pOutputVector );
 static QByteArray PrepareByteStremFromHeadersList( const ::std::vector< SCompressedFileItem >& a_headerList, int a_nHeaderSize );
@@ -23,13 +24,16 @@ static bool CompressFolder(const QString& a_foldePath, const QString& a_targetFi
 static bool CompressFile(const QString& a_filePath, const QString& a_targetFilePath, int a_compressionLevel);
 
 
-bool CompressFileOrFolder(const QString& a_fileOrFolderPath, const QString& a_targetFilePath, int a_compressionLevel)
+bool CompressFileOrFolder(const ::std::u32string& a_fileOrFolderPath, const ::std::u32string& a_targetFilePath, int a_compressionLevel)
 {
-	if(QFileInfo(a_fileOrFolderPath).isDir()){
-		return CompressFolder(a_fileOrFolderPath,a_targetFilePath,a_compressionLevel);
+	QString fileOrFolderPath = ::QString::fromStdU32String(a_fileOrFolderPath);
+	QString targetFilePath = ::QString::fromStdU32String(a_targetFilePath);
+	
+	if(QFileInfo(fileOrFolderPath).isDir()){
+		return CompressFolder(fileOrFolderPath,targetFilePath,a_compressionLevel);
 	}
 	
-	return CompressFile(a_fileOrFolderPath,a_targetFilePath,a_compressionLevel);
+	return CompressFile(fileOrFolderPath,targetFilePath,a_compressionLevel);
 }
 
 static bool CompressFile(const QString& a_filePath, const QString& a_targetFilePath, int a_compressionLevel)
@@ -124,10 +128,10 @@ static bool CompressFolder(const QString& a_foldePath, const QString& a_targetFi
 	for(unIndex=0;unIndex<unOutVectorSize;++unIndex){
 		if(!outputVector[unIndex].raw.stats.bits.isDirectory){
 			if(outputVector[unIndex].raw.stats.bits.shouldRootDirBeAdded){
-				filePath = a_foldePath + outputVector[unIndex].itemFullPath;
+				filePath = a_foldePath + ::QString::fromStdU32String( outputVector[unIndex].itemFullPath );
 			}
 			else{
-				filePath = outputVector[unIndex].itemFullPath;
+				filePath = ::QString::fromStdU32String( outputVector[unIndex].itemFullPath );
 			}
 			qDebug()<<filePath;
 			inputFile.setFileName(filePath);
@@ -157,14 +161,13 @@ static QByteArray PrepareByteStremFromHeadersList( const ::std::vector< SCompres
 	char* pcData = returnArray.data();
 	const size_t cunHeadersCount = a_headerList.size();
 	size_t unIndex;
-	::std::wstring asciiPath;
 	
 	for(unIndex=0;unIndex<cunHeadersCount;++unIndex){
-		asciiPath = a_headerList[unIndex].itemFullPath.toStdWString();
+		//asciiPath = a_headerList[unIndex].itemFullPath.toStd();
 		memcpy(pcData,&(a_headerList[unIndex].raw),sizeof(SRawCompressedFileItem));
-		memcpy(pcData+sizeof(SRawCompressedFileItem),asciiPath.c_str(),sizeof(wchar_t)*a_headerList[unIndex].raw.itemPathLengthPlus1);
-		qDebug()<< QString::fromWCharArray(reinterpret_cast<wchar_t*>(pcData+sizeof(SRawCompressedFileItem)));
-		pcData += ITEM_TOTAL_LENGTH_FROM_ITEM_PTR(&(a_headerList[unIndex].raw));
+		memcpy(pcData+sizeof(SRawCompressedFileItem),a_headerList[unIndex].itemFullPath.c_str(),sizeof(char32_t)*a_headerList[unIndex].raw.itemPathLengthPlus1);
+		qDebug()<< QString::fromUcs4(reinterpret_cast<char32_t*>(pcData+sizeof(SRawCompressedFileItem)));
+		pcData += ITEM_TOTAL_LENGTH_FROM_ITEM_PTR_V1(&(a_headerList[unIndex].raw));
 	}
 	
 	return returnArray;
@@ -204,7 +207,7 @@ static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< S
 			continue;
 		}
 		
-		aNewItem = NULL_ITEM_FROM_PATH(itemPathRelative);
+		aNewItem = NULL_ITEM_FROM_PATH_V1( ::std::u32string() );
 		
 		if(itemPath.startsWith(a_foldePath)){
 			itemPathRelative = itemPath.mid(a_foldePath.size());
@@ -218,7 +221,7 @@ static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< S
 		bItemNotFound = true;
 		unVectorSize = a_pOutputVector->size();
 		for(i=0;i<unVectorSize;++i){
-			if(itemPathRelative==a_pOutputVector->at(i).itemFullPath){
+			if( itemPathRelative == ::QString::fromStdU32String(a_pOutputVector->at(i).itemFullPath) ){
 				bItemNotFound = false;
 				break;
 			}			
@@ -236,10 +239,10 @@ static int IterateDirectoryIntoList(const QString& a_foldePath, ::std::vector< S
 			aNewItem.raw.fileSize = static_cast<uint32_t>(itemFileInfo.size());
 		}
 		aNewItem.raw.itemPathLengthPlus1 = static_cast<uint16_t>(itemPathRelative.toStdWString().length())+1;
-		aNewItem.itemFullPath = itemPathRelative;
+		aNewItem.itemFullPath = itemPathRelative.toStdU32String();
 		
 		a_pOutputVector->push_back(aNewItem);
-		nHeaderSize += ITEM_TOTAL_LENGTH_FROM_ITEM_PTR(&(aNewItem.raw));
+		nHeaderSize += ITEM_TOTAL_LENGTH_FROM_ITEM_PTR_V1(&(aNewItem.raw));
 	}
 	
 	return nHeaderSize;
@@ -281,4 +284,4 @@ static QByteArray WriteByteArrayToZipFile(z_stream* a_strm, int a_flush, const v
 }
 
 
-}  // namespace qtcore{
+}}}  // namespace common{ namespace zlib{ namespace v1{

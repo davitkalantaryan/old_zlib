@@ -1,0 +1,569 @@
+/* ///////////// Global styles ////////////// */
+
+QComboBox {
+color: black;
+font: 14px "Roboto" ;
+padding: 1px 0px 1px 3px; /* This (useless) line resolves a bug with the font color */
+}
+
+QComboBox::drop-down
+{
+border: 0px;
+}
+
+QComboBox::down-arrow {
+image: url(:/DropDownArrow.png);
+width: 12px;
+height: 12px;
+margin-right:4px;
+}
+QListWidget { border:none; background:#F0F4F7; show-decoration-selected:0; }
+QScrollBar:vertical { width: 2px; }
+
+QListWidget::item { outline: none; }
+QListWidget::item:selected { background-color: #F0F4F7;}
+QListWidget::item:hover:!selected { background-color: #F0F4F7; }
+
+QMenu::item{
+color:gray;
+margin: 0px;
+padding-left: 10px;
+width:180;
+height: 35px;
+}
+
+QMenu::item:selected{
+background-color: #C0C0C0;
+color: #fff;
+}
+
+/* ///////////// End Global styles ////////////// */
+
+
+/*///////////////////// Begin MainLeftStyleWidget //////////////////// */
+QWidget#mainLeftStyleWidget, QWidget#nD_ControlTimeTrackingWidget, QWidget#m_BottomWidget_
+{
+background-color:#F0F4F7;
+}
+QWidget#m_NdmainWidget
+{
+background-color:#0487D9;
+color:#fff;
+}
+
+QWidget#m_NdmainWidget_click
+{
+background-color:#F0F4F7;
+
+}
+
+QWidget#m_NdmainWidget:hover
+{
+background-color:#0277BD;
+}
+
+QWidget#m_ndTopWidget
+{
+background-color:#F0F4F7;
+}
+QWidget#m_ndBottomWidget
+{
+background-color:#F4F8F9;
+}
+
+QLabel#m_NdTextLabel_click
+{
+color:#0487D9;
+font:15px "Roboto bold";
+}
+
+QLabel#m_NdTextLabel
+{
+color:#fff;
+font:15px "Roboto bold";
+}
+QLabel#m_NdIconLabel_user
+{
+background-color:#F0F4F7;
+
+padding:5px;
+padding-bottom:5px;
+border-radius:20px;
+}
+
+QLabel#m_NdIconLabel_user1
+{
+min-width:150px;
+}
+QLabel#m_ndUpdateNameLabel,QLabel#m_ndUpdateTimeLabel
+{
+margin:0;
+padding:0;
+font:12px "Roboto";
+color: #808080;
+}
+QLabel#m_ndUpdateNameLabel,QLabel#m_StartAtNameLabel{ color: #595959; font:bold 12px "Roboto";}
+
+QLabel#m_NdStatusLabel
+{
+background-color:#00CC00;
+border-radius:5px;
+}
+QPushButton#m_ndUpdateButton
+{
+min-width:25px;
+min-height:25px;
+border:1px solid gray;
+border-radius:5px;
+}
+
+QPushButton#m_ndUpdateButton:hover{ border:1px solid #158AFF; }
+QPushButton#m_ndUpdateButton:pressed{ border:2px solid #158AFF; }
+
+/*///////////////////// End MainLeftStyleWidget //////////////////// */
+
+
+
+/*///////////////////// Begin ND_ControlTimeTrackingWidget //////////////////// */
+QWidget#m_TopWidget
+{
+margin-left:35px;
+margin-right:35px;
+margin-top:20px;
+margin-bottom:25px;
+border-radius:5px;
+background-color:#fff;
+min-height:140px;
+}
+QWidget#m_SubTopWidget{  }
+
+QPushButton#m_ClockStatusButton
+{
+    min-height:36px;
+    padding-left:20px;
+    padding-right:20px;
+    margin-left:20px;
+
+    border-radius:5px;
+    color:White;
+    max-width: 80px;
+    background-color:#00900D;
+    font: 14px "Roboto bold";
+}
+QPushButton#m_ClockStatusButton:hover{ background-color:black;}
+QPushButton#m_ClockStatusButton:pressed{ background-color:#FBA64D;}
+
+QPushButton#m_ClockStatusButton_yellow:pressed{ background-color:#00900D;}
+
+QPushButton#m_ClockStatusButton_yellow
+{
+    min-height:36px;
+    padding-left:20px;
+    padding-right:20px;
+    margin-left:20px;
+
+    border-radius:5px;
+    color:White;
+    max-width: 80px;
+    background-color:#FBA64D;
+    font: 14px "Roboto bold";
+}
+
+QPushButton#m_BreakStatusButton
+{
+    min-height:36px;
+    padding-left:10px;
+    padding-right:10px;
+    margin-left:20px;
+    border-radius:5px;
+    max-width: 100px;
+    background-color:#0D87DD;
+    color:#fff;
+    font: 14px "Roboto bold";
+
+}
+
+QPushButton#m_BreakStatusButton_yellow
+{
+    min-height:36px;
+    padding-left:10px;
+    padding-right:10px;
+    margin-left:20px;
+    border-radius:5px;
+    max-width: 100px;
+    background-color:#FBA64D;
+    color:#fff;
+    font: 14px "Roboto bold";
+
+}
+
+QPushButton#m_BreakStatusButton_noworking
+{
+    min-height:36px;
+    padding-left:10px;
+    padding-right:10px;
+    margin-left:20px;
+    border-radius:5px;
+    max-width: 100px;
+    background-color:#cce7e8;
+    color:#fff;
+    font: 14px "Roboto bold";
+
+}
+
+
+QLabel#m_HourStatusLabel
+{
+font: 60px "Franklin Gothic Medium";
+color:#133F58;
+margin-left:20px;
+}
+QLabel#m_StartAtNameLabel{margin-left:20px; color: #595959; font:bold 14px "Roboto";}
+QLabel#m_StartAtTimeLabel{ font:14px "Roboto"; color: #808080; }
+
+QPushButton#m_BreakStatusButton:hover{ background-color:#000;}
+
+QLabel#m_BreakTimeNameLabel{ font: 13px "Roboto";}
+QLabel#m_BreakTimeValueLabel{ font:13px "Roboto"; color: #808080;}
+/*///////////////////// End ND_ControlTimeTrackingWidget //////////////////// */
+
+
+
+
+/*///////////////////// Begin ND_LogoWIndow //////////////////// */
+QWidget#m_LeftSideWidget{ background-color:#F0F4F7;}
+
+QWidget#m_RightSideWidget
+{
+background-color: #007BDA;
+}
+
+QLineEdit#m_Username,QLineEdit#m_Password
+{
+min-height: 30px;
+border-radius:5px;
+padding:3px;
+margin-top:4px;
+padding-left:20px;
+font:14px "Arial";
+}
+QPushButton#m_SignInButton
+{
+background-color:#000;
+color:#fff;
+margin-top:4px;
+border-radius:5px;
+min-height: 38px;
+font:14px "Arial";
+}
+QPushButton#m_SignInButton:hover{ background-color:#222;}
+QPushButton#m_SignInButton:pressed{font-size:15px; background-color:#222;}
+
+QLabel#m_SignInNameLabel
+{
+font:bold 35px "Arial";
+color:#fff;
+}
+
+/*///////////////////// End ND_LogoWIndow //////////////////// */
+
+
+
+
+/*///////////////////// Begin ND_SearchRecentProjectsCustomItem //////////////////// */
+
+QWidget#nD_SearchRecentProjectsCustomItem
+{
+background-color:#F0F4F7;
+}
+
+QWidget#m_MainWg
+{
+border-radius:5px;
+background-color:#fff;
+max-height:65px;
+min-height:65px;
+
+}
+QWidget#m_MainWg:hover{ border:1px solid #e5e5e5;}
+
+
+QLabel#m_LogoLabel
+{   margin:12px;
+margin-left:20;
+min-width:38px;
+max-width:38px;
+color:#7C7C7C;
+border:1px solid #A6A6A6;
+border-radius:5px;
+font: 20px "Arial";
+}
+QLabel#m_TimeCheckStatusLabel
+{
+font: 17px "OCRB";
+min-width:120px;
+}
+QLabel#m_TimeCheckStatusValueLabel
+{
+font: 15px "Arial";
+color:#808080;
+margin-left:12px;
+}
+
+QPushButton#m_MoreInfoAboutTaskButton
+{
+border:none;
+color:#007BDA;
+font-size:15px;
+}
+
+/*///////////////////// End ND_SearchRecentProjectsCustomItem //////////////////// */
+
+
+
+
+
+/*///////////////////// Begin ND_WorkingTimeHistoryListCustomItem //////////////////// */
+QWidget#m_MainWidgetWnd
+{
+background-color:#F0F4F7;
+}
+
+
+QWidget#m_BottomWidget_lcitem
+{
+background-color:#fff;
+border-radius:5px;
+margin-left:30px;
+margin-right:30px;
+max-height:65px;
+min-height:65px;
+}
+
+
+QLabel#m_ClockOutNameLabel,QLabel#m_ClockInNameLabel
+{
+font:15px "Arial";
+}
+
+QLabel#m_ClockInNameLabel{margin-left:30px;}
+QLabel#m_TotalTimeLabel{margin-right:30px;}
+QLabel#m_ClockInTimeLabel,QLabel#m_ClockOutTimeLabel,QLabel#m_TotalTimeLabel
+{
+font:15px "Arial";
+color:#A6A6A6;
+}
+
+QLabel#m_DaynameLabel{margin:0; margin-left:20px;}
+
+/*///////////////////// End ND_WorkingTimeHistoryListCustomItem //////////////////// */
+
+
+
+
+/*///////////////////// Begin ND_SearchTasksWindow //////////////////// */
+QWidget#nD_SearchTasksWindow,QWidget#nD_SearchRecentProjectsWindow
+{
+background-color: #F0F4F7;
+}
+QWidget#m_FirstWidget_searchtask{ max-height:40px;}
+
+QLabel#m_TaskNameLabel1
+{
+margin-left:20px;
+font:bold 16px "Roboto";
+color:gray;
+}
+QPushButton#m_ResentTasksHistoryCombobox
+{
+border:none;
+padding:5px;
+font:bold 14px "Roboto";
+background-color:#F0F4F7;
+margin-right:10px;
+color:#61717E;
+
+/* image: url(:/DropDownArrow.png);
+image-position:right;*/
+}
+
+QLabel#m_TaskNameLabel
+{
+margin-left:20px;
+font:16px "Roboto";
+color:#284B61;
+}
+
+QLabel#m_BottomStatusLabel
+{
+font:12px "Roboto";
+}
+
+QWidget#m_TopWidget2
+{
+min-height:130px;
+max-height:130px;
+}
+QPushButton#m_resentProjectsButton
+{
+border:none;
+font: 16px "Roboto";
+max-width:130px;
+min-height:30px;
+}
+QPushButton#m_resentProjectsButton:pressed
+{
+color:#1273EB;
+}
+
+QLineEdit#m_SearchLineEdit
+{
+margin-top:5px;
+margin-bottom:5px;
+min-height: 33px;
+font:16px "Roboto";
+border-radius:5px;
+border:1px solid #D7D7D7;
+padding-left:65px;
+padding-top:5px;
+padding-bottom:5px;
+background:#E5F6FF;
+background-image: url(:/img/search.png); /* actual size, e.g. 16x16 */
+background-repeat: no-repeat;
+background-position: left;
+}
+
+QLineEdit#m_SearchLineEdit:focus
+{
+border:1px solid #1C8DFF;
+}
+
+/*///////////////////// End ND_SearchTasksWindow //////////////////// */
+
+
+
+
+
+/*///////////////////// Begin ND_SearchTaskCustomItem //////////////////// */
+
+QWidget#nD_SearchTaskCustomItem
+{
+background-color: #F0F4F7;
+}
+
+QWidget#m_MainWidget_taskcustomitem
+{
+background-color: #fff;
+border-radius:5px;
+max-height:170px;
+}
+QLabel#m_DescriptionNoteLabel,QLabel#m_ProjectTaskTimeLabel{color:gray; font-size:13px;}
+QLabel#m_DescriptionNameLabel,QLabel#m_ProjectTaskNameLabel{font: 15px "Arial";}
+
+QPushButton#m_PlayButtonTasks,QPushButton#m_SubTasksButton
+{
+border:1px solid #178BFF;
+color:#178BFF;
+font: bold 15px "Arial";
+border-radius:5px;
+background-color: #E5F6FF;
+min-height:42px;
+min-width:42px;
+}
+QLabel#m_StatusQualityLabel
+{
+color:#F00000;
+max-width:38px;
+border-radius:5px;
+padding-right:2px;
+margin-left:50px;
+border: 1px solid #F00000;
+background-color:#FFC6C6;
+}
+
+QLabel#m_StatusTaskProsessLabel
+{
+border-radius:5px;
+min-width:88px;
+padding-right:2px;
+background-color:#C9FFD7;
+border: 1px solid #1F802B;
+color:#1F802B;
+}
+
+QPushButton#m_SettingsCombobox
+{
+border:1px solid #000;
+color:#fff;
+font: bold 15px "Arial";
+border-radius:5px;
+background-color: #fff;
+min-height:42px;
+max-width:42px;
+image: url(:/settings.png);
+}
+QMenu#m_RightMenu
+{
+border:1px solid gray;
+margin-top:5px;
+border-radius:5px;
+background:#fff;
+padding-top:10px;
+
+}
+
+
+
+
+/*///////////////////// End ND_SearchTaskCustomItem //////////////////// */
+
+
+
+/*///////////////////// Begin ND_SearchTaskSubCustomItem //////////////////// */
+
+QWidget#m_MainWidget_subcustomitem
+{
+background:#fff;
+border-radius:5px;
+min-height: 65px;
+}
+
+QPushButton#m_StatusTaskIconLabel
+{
+border-radius:5px;
+border:1px solid #F00000;
+background:#FFC6C6;
+padding:12px;
+max-width:15px;
+image: url(:/stop_icon.png);
+}
+
+QPushButton#m_StatusTaskIconLabel_check
+{
+border-radius:5px;
+border:1px solid #80888D;
+background:#EBEDED;
+padding:12px;
+max-width:15px;
+image: url(:/check_icon.png);
+}
+
+
+QLabel#m_TaskDurationTimesLabel,QLabel#m_ResultTimeLabel{ font:16px "Arial"}
+QLabel#m_TaskDurationDayLabel{ color:gray;}
+
+
+
+/*///////////////////// End ND_SearchTaskSubCustomItem //////////////////// */
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/toggle_butons_on.png</file>
+        <file>img/toggle_butons_off.png</file>
+        <file>img/q_letter.png</file>
+        <file>img/window_frame.png</file>
+		<file>img/quit_pik.png</file>
+		<file>img/logout_icon_2857_thumb.png</file>
+		<file>img/start_break_button.png</file>
+		<file>img/stop_break_button.png</file>
+		<file>img/lock_image01.png</file>
+		<file>img/update_setting_system_upgrade_refresh.png</file>
+		<file>img/software_testing_icon.png</file>
+		<file>img/projects_list.png</file>
+		<file>img/emp_monitor_logo_chropped.png</file>
+		<file>img/console_icon.png</file>
+    </qresource>
+</RCC>

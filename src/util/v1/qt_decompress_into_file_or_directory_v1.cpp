@@ -4,8 +4,9 @@
 // created by:		D. Kalantaryan (davit.kalantaryan@gmail.com)
 // 
 
-#include <qt_zlib_compression_routines.hpp>
+#include <common/zlib/v1/decompress_routines.hpp>
 #include <zlib_compress_decompress_common_private.hpp>
+#include <v1/zlib_compress_decompress_common_v1_private.hpp>
 #include <vector>
 #include <QDirIterator>
 #include <QFile>
@@ -26,7 +27,8 @@
 
 #define DEF_CHUNK_SIZE				16384
 
-namespace qtcore{
+namespace common{ namespace zlib{ namespace v1{
+
 
 static bool DecompressContentOfByteArray( 
 		SRawCompressHeader* a_pRawHeader, ::std::vector< SCompressedFileItem >* a_pOut, z_stream* a_strm,
@@ -36,13 +38,15 @@ static bool DecompressContentOfByteArray(
 		size_t* a_punCurrentIndexOfFile);
 
 
-bool DecompressFile(const QString& a_compressedFilePath, const QString& a_decompressedFileOrFolderPath, ::std::vector< ::qtcore::SCompressedFileItem >* a_pVector)
+bool DecompressFile(const ::std::u32string& a_compressedFilePath, const ::std::u32string& a_decompressedFileOrFolderPath, ::std::vector< SCompressedFileItem >* a_pVector)
 {
 	bool bReturnFromFunc = false;
 	int nReturnFromZlibRoutine;
 	z_stream strm;
-	QDir targetDir(QFileInfo(a_decompressedFileOrFolderPath).path());
-	QFile compressedFile(a_compressedFilePath);
+	QString compressedFilePath = ::QString::fromStdU32String(a_compressedFilePath);
+	QString decompressedFileOrFolderPath = ::QString::fromStdU32String(a_decompressedFileOrFolderPath);
+	QDir targetDir(QFileInfo(decompressedFileOrFolderPath).path());
+	QFile compressedFile(compressedFilePath);
 	QFile decompressedFile;
 	QByteArray inputArray(DEF_CHUNK_SIZE,0);
 	QByteArray arrayForItemsList;
@@ -87,7 +91,7 @@ bool DecompressFile(const QString& a_compressedFilePath, const QString& a_decomp
 		if( !DecompressContentOfByteArray(
 					&zipRawHeader,&outputVector,&strm,&unMainHeaderOffset,
 					&unFileItemsOffset,&unCurrentFileOffset,&arrayForItemsList,
-					a_decompressedFileOrFolderPath,&decompressedFile,&bFinished,&unCurrentIndexOfFile)  )
+					decompressedFileOrFolderPath,&decompressedFile,&bFinished,&unCurrentIndexOfFile)  )
 		{
 			goto returnPoint;
 		}
@@ -119,7 +123,7 @@ struct SRawCompressHeader{
 };
 #endif
 
-static void GetAllFileItemHeaders( QByteArray& a_arrayForItemsList, ::std::vector< SCompressedFileItem >* a_pOut, uint32_t a_itemsHeaderSizeOrFileSize, uint16_t endian);
+static void GetAllFileItemHeaders( const QByteArray& a_arrayForItemsList, ::std::vector< SCompressedFileItem >* a_pOut, uint32_t a_itemsHeaderSizeOrFileSize, uint16_t endian);
 
 
 static bool DecompressContentOfByteArray( 
@@ -185,6 +189,23 @@ static bool DecompressContentOfByteArray(
 				
 				if(!a_pRawHeader->stats.bits.isEndianDiscovered){
 					if(a_pRawHeader->endian!=1){
+#if 0
+						struct SRawCompressHeader{
+							uint16_t	endian;
+							union{
+								struct{
+									uint16_t	isDirectory : 1;
+									uint16_t	isEndianDiscovered : 1;
+									uint16_t	reserved16bitwise01 : 14;
+								}bits;
+								uint16_t	allBits;
+							}stats;
+							uint32_t	itemsHeaderSizeOrFileSize;
+							uint16_t	version;
+							uint16_t	reserved16bit01;
+							uint32_t	reserved32bit01;
+						};
+#endif
 						::zlib::privateN::SwapStatic(&a_pRawHeader->stats.allBits);
 						::zlib::privateN::SwapStatic(&a_pRawHeader->itemsHeaderSizeOrFileSize);
 						::zlib::privateN::SwapStatic(&a_pRawHeader->version);
@@ -360,28 +381,26 @@ struct SRawCompressedFileItem{
 };
 #endif
 
-static void GetAllFileItemHeaders( QByteArray& a_arrayForItemsList, ::std::vector< SCompressedFileItem >* a_pOut, uint32_t a_itemsHeaderSizeOrFileSize, uint16_t a_endian)
+static void GetAllFileItemHeaders( const QByteArray& a_arrayForItemsList, ::std::vector< SCompressedFileItem >* a_pOut, uint32_t a_itemsHeaderSizeOrFileSize, uint16_t a_endian)
 {
 	SCompressedFileItem nextItem;
 	uint32_t unOffsetInHeader = 0;
-	char* pItemsHeaderPtr = a_arrayForItemsList.data();
-	SRawCompressedFileItem* pItemPtr;
+	const char* pItemsHeaderPtr = a_arrayForItemsList.data();
+	const SRawCompressedFileItem* pItemPtr;
 	
 	while(unOffsetInHeader<a_itemsHeaderSizeOrFileSize){
-		wchar_t* pcItemFullPath;
-		pItemPtr = reinterpret_cast<SRawCompressedFileItem*>(pItemsHeaderPtr+unOffsetInHeader);
-		pcItemFullPath = ITEM_FILE_NAME_FROM_ITEM_PTR(pItemPtr);
+		pItemPtr = reinterpret_cast<const SRawCompressedFileItem*>(pItemsHeaderPtr+unOffsetInHeader);
 		nextItem.raw = *pItemPtr;
 		if(a_endian!=1){
 			::zlib::privateN::SwapStatic(&nextItem.raw.itemPathLengthPlus1);
 			::zlib::privateN::SwapStatic(&nextItem.raw.stats.allBits);
 			::zlib::privateN::SwapStatic(&nextItem.raw.fileSize);
 		}
-		nextItem.itemFullPath = QString::fromWCharArray(ITEM_FILE_NAME_FROM_ITEM_PTR(pItemPtr));
+		nextItem.itemFullPath = ITEM_FILE_NAME_FROM_ITEM_PTR_V1(pItemPtr);
 		a_pOut->push_back(nextItem);
-		unOffsetInHeader += ITEM_TOTAL_LENGTH_FROM_ITEM_PTR(&(nextItem.raw));
+		unOffsetInHeader += ITEM_TOTAL_LENGTH_FROM_ITEM_PTR_V1(&(nextItem.raw));
 	}
 }
 
 
-}  // namespace qtcore{
+}}}  // namespace common{ namespace zlib{ namespace v1{

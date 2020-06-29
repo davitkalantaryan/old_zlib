@@ -1,6 +1,7 @@
 *.[oa]
 *~
 *.obj
+*.autosave
 *.pro.user*
 .tmp/*
 contrib/sys/*/*/*/*

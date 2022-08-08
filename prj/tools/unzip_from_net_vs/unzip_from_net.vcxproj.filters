@@ -18,9 +18,6 @@
     <ClCompile Include="..\..\..\src\util\main_unzip_from_net.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\util\common_argument_parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\util\zlib_compress_decompress_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -28,6 +25,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\util\zlib_decompress_routines_version1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\utils\common_argument_parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

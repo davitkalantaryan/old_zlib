@@ -15,6 +15,7 @@
 #include <string.h>
 #include <Windows.h>
 #include <stdio.h>
+#include <string>
 
 
 #ifdef _MSC_VER
@@ -33,7 +34,7 @@ int IterateOverDirectoryFiles(const char* a_sourceDirectory, TypeIterFunc a_call
 {
 	HANDLE				hFile;                       // Handle to directory
 	WIN32_FIND_DATAA	FileInformation;             // File information
-	int					nReturn, nIsDir;
+	int					nReturn, nIsDir, iRC;
 	char				vcStrPattern[MAX_PATH];
 	char				vcStrFilePath[MAX_PATH];
 
@@ -52,12 +53,22 @@ int IterateOverDirectoryFiles(const char* a_sourceDirectory, TypeIterFunc a_call
 			else { nIsDir = 0; }
 
 			nReturn = (*a_callback)(a_sourceDirectory, &FileInformation, a_ud,nIsDir);
-			if (nReturn < 0){ if(nReturn==_STOP_FOR_CUR_DIR_){return 0;}return nReturn; }
+			switch (nReturn) {
+			case _STOP_FOR_CUR_DIR_:
+				return 0;
+			case 0: case 1: case 2: case 3: case 4: case 5:
+				break;
+			case DIR_ITER_SKIP:
+				continue;
+			default:
+				if (nReturn < 0) { return nReturn; }
+				break;
+			}  // switch (nReturn) {
 
 			if (nIsDir&&(*a_bSubDirs)){
 				//strFilePath = sourceDirectory + "\\" + FileInformation.cFileName;//strTargetFilePath
 				_snprintf(vcStrFilePath, MAX_PATH,"%s\\%s",a_sourceDirectory, FileInformation.cFileName);
-				int iRC = IterateOverDirectoryFiles(vcStrFilePath, a_callback, a_ud,a_bSubDirs);
+				iRC = IterateOverDirectoryFiles(vcStrFilePath, a_callback, a_ud,a_bSubDirs);
 				if (iRC){ return iRC; }
 			}  // if (nIsDir&&(*a_bSubDirs)){
 

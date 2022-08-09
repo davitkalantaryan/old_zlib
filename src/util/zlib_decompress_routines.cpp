@@ -248,6 +248,8 @@ returnPoint:
 }
 
 
+#ifdef ZLIB_DECOMPRESS_FROM_WEB
+
 int ZlibDecompressWebToCallback(
 	z_stream* a_strm,
 	HINTERNET a_source,
@@ -260,13 +262,13 @@ int ZlibDecompressWebToCallback(
 
 	/* decompress until deflate stream ends or end of file */
 	do {
-		if(!InternetReadFile(a_source,a_in, a_inBufferSize,&dwRead)){return Z_ERRNO;}
+		if (!InternetReadFile(a_source, a_in, a_inBufferSize, &dwRead)) { return Z_ERRNO; }
 		a_strm->avail_in = dwRead;
-		if (a_strm->avail_in == 0){break;} // we are done
+		if (a_strm->avail_in == 0) { break; } // we are done
 		a_strm->next_in = (Bytef*)a_in;
 
-		retInf=ZlibDecompressBufferToCallback(a_strm,a_out,a_outBufferSize,a_clbk,a_userData);
-		if(retInf<0){return retInf;}
+		retInf = ZlibDecompressBufferToCallback(a_strm, a_out, a_outBufferSize, a_clbk, a_userData);
+		if (retInf < 0) { return retInf; }
 
 	} while (retInf != Z_STREAM_END);
 
@@ -330,6 +332,8 @@ returnPoint:
 
 	return nReturn;
 }
+
+#endif  // #ifdef ZLIB_DECOMPRESS_FROM_WEB
 
 
 /*////////////////////////////////////////////////////////////////////////////*/

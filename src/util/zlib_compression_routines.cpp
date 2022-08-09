@@ -37,6 +37,7 @@ extern "C"{
 
 typedef struct SUserDataForDirCompress
 {
+	TypeFilter		funcFilter;
 	SCompressList	list;
 	uint16_t		numberOfItems;
 	uint16_t		headerSize;
@@ -205,8 +206,10 @@ returnPoint:
 }
 
 
+static int FilterFuncDefault(const char*, const char*, int) { return 0; }
 
-int ZlibCompressFolder(const char* a_directoryPath, FILE *a_dest, int a_level)
+
+int ZlibCompressFolder(const char* a_directoryPath, FILE *a_dest, int a_level, TypeFilter a_filter)
 {
 	SFileItemList *pItem,*pItemNext;
 	SUserDataForDirCompress aData;
@@ -216,7 +219,8 @@ int ZlibCompressFolder(const char* a_directoryPath, FILE *a_dest, int a_level)
 	memset(&aData, 0, sizeof(SUserDataForDirCompress));
 
 	aData.offsetToTakeRoot = (uint16_t)strlen(a_directoryPath)+1;
-	nReturn=IterateOverDirectoryFiles(a_directoryPath, DirectoryIterator, &aData, &nSubDirs);
+	aData.funcFilter = a_filter ? a_filter : &FilterFuncDefault;
+	nReturn=IterateOverDirectoryFiles(a_directoryPath, &DirectoryIterator, &aData, &nSubDirs);
 
 	if(nReturn){goto returnPoint;}
 
@@ -286,6 +290,10 @@ static int DirectoryIterator(const char* a_dir, const FIND_DATAA* a_file_info, v
 	int nReturn = -1;
 	uint16_t strLen;
 	char vcStrFilePath[MAX_PATH];
+
+	if ((*pData->funcFilter)(a_dir, a_file_info->cFileName, a_isDir)) {
+		return DIR_ITER_SKIP;
+	}
 
 	_snprintf(vcStrFilePath,MAX_PATH, "%s\\%s", a_dir, a_file_info->cFileName);
 	cpcFileName = vcStrFilePath + pData->offsetToTakeRoot;

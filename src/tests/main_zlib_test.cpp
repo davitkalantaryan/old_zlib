@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 	else if (strcmp("cd", argv[1]) == 0) {
 		fpOut = fopen(argv[3], "wb");
 		if (!fpOut) { goto returnPoint; }
-		ret = ZlibCompressFolder(argv[2], fpOut, Z_DEFAULT_COMPRESSION);
+		ret = ZlibCompressFolder(argv[2], fpOut, Z_DEFAULT_COMPRESSION,NULL);
 	}
 	else if (strcmp("dd", argv[1]) == 0) {
 		fpIn = fopen(argv[2], "rb");
